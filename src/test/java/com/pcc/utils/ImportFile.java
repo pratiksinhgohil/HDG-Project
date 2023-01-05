@@ -1,4 +1,4 @@
-package Mail_scheduler;
+package com.pcc.utils;
 
 import java.awt.AWTException;
 import java.awt.Robot;
@@ -9,25 +9,25 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
 
-import ObjectRepo.Import_fileOR;
+import com.pcc.app.Application;
 
-public class Import_File extends Import_fileOR {
+public class ImportFile extends ImportFileOr {
 	WebDriver driver;
 
-	public Import_File(WebDriver driver) {
+	public ImportFile(WebDriver driver) {
 		this.driver = driver;
 		PageFactory.initElements(driver, this);
 	}
 
 	public void username() throws InterruptedException {
-		uname.sendKeys("hdg.hcubtech");
+		uname.sendKeys(Application.configProps.getProperty("pcc.ftp.username"));
 		Thread.sleep(2000);
 		nextbtn.click();
 		Thread.sleep(2000);
 	}
 
 	public void password() throws InterruptedException {
-		pwd.sendKeys("TntraHappyCub22");
+		pwd.sendKeys(Application.configProps.getProperty("pcc.ftp.password"));
 		Thread.sleep(2000);
 	}
 
@@ -54,12 +54,12 @@ public class Import_File extends Import_fileOR {
 		Thread.sleep(2000);
 	}
 
-	public void uploadfile() throws InterruptedException {
+	public void uploadfile(String filePath) throws InterruptedException {
 		String oldTab = driver.getWindowHandle();
 		ArrayList<String> tabs2 = new ArrayList<String>(driver.getWindowHandles());
 		tabs2.remove(oldTab);
 		driver.switchTo().window(tabs2.get(0));
-		uploadfile.sendKeys("C://FTP File//HDG_invout_HDG-2_20201130_TEST3_29-12-2022 13-36-24.csv");
+		uploadfile.sendKeys(filePath);//"C://FTP File//HDG_invout_HDG-2_20201130_TEST3_29-12-2022 13-36-24.csv"
 		Thread.sleep(2000);
 	}
 
