@@ -3,13 +3,13 @@
 <suite name="Failed suite [Default suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="Default test(failed)">
     <classes>
-      <class name="Test_Project.Test_Script">
+      <class name="com.pcc.app.Application">
         <methods>
-          <include name="Import_File"/>
           <include name="setup"/>
           <include name="closeBrowser"/>
+          <include name="Import_File"/>
         </methods>
-      </class> <!-- Test_Project.Test_Script -->
+      </class> <!-- com.pcc.app.Application -->
     </classes>
   </test> <!-- Default test(failed) -->
 </suite> <!-- Failed suite [Default suite] -->

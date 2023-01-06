@@ -12,51 +12,71 @@ import org.apache.commons.net.ftp.FTPClient;
 import com.pcc.app.Application;
 
 public class FtpConnection {
+	private FTPClient ftpClient = new FTPClient();
+	private final String server = Application.configProps.getProperty("pcc.ftp.host", ""); // "FTP.dssinetwork.com";
+	private final int port = 21;
+	private final String user = Application.configProps.getProperty("pcc.ftp.username", "");// "HDG";
+	private final String pass = Application.configProps.getProperty("pcc.ftp.password", "");// "Ay48pMM";
+	private final String remotePath = Application.configProps.getProperty("pcc.ftp.remotepath", "//In//Test//");// "Ay48pMM";
+	private final String localPath = Application.configProps.getProperty("pcc.ftp.localpath",
+			"C://PCC//DOWNLOADED_FILES//");
 
-	public void con() {
+	public FtpConnection() {
 
-		String server = Application.configProps.getProperty("pcc.ftp.host", ""); // "FTP.dssinetwork.com";
-		int port = 21;
-		String user = Application.configProps.getProperty("pcc.ftp.username", "");// "HDG";
-		String pass = Application.configProps.getProperty("pcc.ftp.password", "");// "Ay48pMM";
-		String remotePath = Application.configProps.getProperty("pcc.ftp.remotepath", "/In/Test/");// "Ay48pMM";
-		String localPath = Application.configProps.getProperty("pcc.ftp.localpath", "C:/PCC_DOWNLOADED_FILES/");
+	}
 
-		FTPClient ftpClient = new FTPClient() {
-		};
+	public boolean connect() {
+
 		try {
-
 			ftpClient.connect(server, port);
 			ftpClient.login(user, pass);
 			ftpClient.enterLocalPassiveMode();
 			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+			return true;
 
+		} catch (IOException ex) {
+			System.out.println("Error in FTP connection : " + ex.getMessage());
+			ex.printStackTrace();
+			return false;
+		}
+
+	}
+
+	public int downloadFiles() {
+
+		try {
 			String[] remoteFiles = ftpClient.listNames(remotePath);
 
 			if (remoteFiles.length == 0) {
 				System.out.println("No file to process at path " + remotePath);
+				return 0;
 			}
-
+			int fileCounter = 0;
 			for (String remoteFile : remoteFiles) {
 
-				InputStream readingStream = ftpClient.retrieveFileStream(remotePath + remoteFile);
-				OutputStream writingStream = new BufferedOutputStream(new FileOutputStream(localPath + remoteFile));
-				byte[] bytesArray = new byte[4096];
-				int bytesRead = -1;
-				while ((bytesRead = readingStream.read(bytesArray)) != -1) {
-					writingStream.write(bytesArray, 0, bytesRead);
-				}
+				if (remoteFile.endsWith(".csv")) {
+					InputStream readingStream = ftpClient.retrieveFileStream(remotePath + remoteFile);
+					OutputStream writingStream = new BufferedOutputStream(new FileOutputStream(localPath + remoteFile));
+					byte[] bytesArray = new byte[4096];
+					int bytesRead = -1;
+					while ((bytesRead = readingStream.read(bytesArray)) != -1) {
+						writingStream.write(bytesArray, 0, bytesRead);
+					}
 
-				boolean success = ftpClient.completePendingCommand();
-				if (success) {
-					System.out.println(remoteFile + " has been downloaded successfully.");
+					boolean success = ftpClient.completePendingCommand();
+
+					if (success) {
+						System.out.println(remoteFile + " has been downloaded successfully.");
+					}
+
+					writingStream.close();
+					readingStream.close();
+					ftpClient.deleteFile(remotePath + remoteFile);
+					fileCounter++;
 				}
-				
-				writingStream.close();
-				readingStream.close();
-				ftpClient.deleteFile(remotePath + remoteFile);
 			}
 
+			return fileCounter;
 			/*
 			 * LocalDateTime timestamp = LocalDateTime.now();
 			 * 
@@ -78,8 +98,9 @@ public class FtpConnection {
 			 */
 
 		} catch (IOException ex) {
-			System.out.println("Error: " + ex.getMessage());
+			System.out.println("Error in FTP connection : " + ex.getMessage());
 			ex.printStackTrace();
+			return 0;
 		} finally {
 			try {
 				if (ftpClient.isConnected()) {
@@ -90,7 +111,6 @@ public class FtpConnection {
 				ex.printStackTrace();
 			}
 		}
-
 	}
 
 }

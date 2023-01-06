@@ -12,8 +12,17 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.pcc.utils.FtpConnection;
 import com.pcc.utils.ImportFile;
 
+/**
+ * @author dell
+ *
+ * Create following folders 
+ * C://PCC//
+ * C://PCC//DOWNLOADED_FILES//
+ *
+ */
 public class Application {
 
 	WebDriver driver;
@@ -26,10 +35,25 @@ public class Application {
 
 		configProps = loadProperties();
 		System.setProperty("webdriver.chrome.driver", configProps.getProperty("webdriver.chrome.driver"));// "C:/Users/Administrator/Downloads/chromedriver_win32new/chromedriver.exe"
+		
+		
+		// Connect to FTP and download files
+		
+		FtpConnection pccFTPConn = new FtpConnection();
+		if(pccFTPConn.connect()) {
+			if(pccFTPConn.downloadFiles() > 0) {
+				
+			}
+		}
+		
 		driver = new ChromeDriver();
 		driver.manage().window().maximize();
 		driver.get(configProps.getProperty("pcc.website"));// "https://www25.pointclickcare.com/home/login.jsp?ESOLGuid=40_1672328090402"
 		Thread.sleep(2000);
+		
+		// Download files 
+		
+		
 		// driver.manage().deleteAllCookies();
 		// driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 	}
@@ -88,7 +112,7 @@ public class Application {
 			Properties prop = new Properties();
 			prop.load(input);
 			for (String key : prop.stringPropertyNames()) {
-				System.out.println(prop + " >> " + prop.getProperty(key));
+				System.out.println(key + " >> " + prop.getProperty(key));
 			}
 			return prop;
 		} catch (IOException ex) {

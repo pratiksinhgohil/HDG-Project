@@ -1,7 +1,6 @@
 package com.pcc.utils;
 
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -60,7 +59,7 @@ public class EmailConfig {
 			textBodyPart.setText(Application.configProps.getProperty("pcc.mail.body", ""));
 
 			MimeBodyPart pdfattachment = new MimeBodyPart();
-			String localPath = Application.configProps.getProperty("pcc.ftp.localpath", "C://PCC_DOWNLOADED_FILES//");
+			String localPath = Application.configProps.getProperty("pcc.ftp.localpath", "C://PCC//DOWNLOADED_FILES//");
 			pdfattachment.attachFile(localPath+"HDG_invout_HDG-2_20201130_TEST3.csv");
 
 			emailContent.addBodyPart(textBodyPart);
