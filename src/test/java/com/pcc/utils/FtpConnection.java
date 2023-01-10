@@ -18,15 +18,13 @@ public class FtpConnection {
 	private final String user = Application.configProps.getProperty("pcc.ftp.username", "");// "HDG";
 	private final String pass = Application.configProps.getProperty("pcc.ftp.password", "");// "Ay48pMM";
 	private final String remotePath = Application.configProps.getProperty("pcc.ftp.remotepath", "//In//Test//");// "Ay48pMM";
-	private final String localPath = Application.configProps.getProperty("pcc.ftp.localpath",
-			"C://PCC//DOWNLOADED_FILES//");
 
 	public FtpConnection() {
 
 	}
 
 	public boolean connect() {
-
+		System.out.println("Connecting to FTP");
 		try {
 			ftpClient.connect(server, port);
 			ftpClient.login(user, pass);
@@ -43,7 +41,7 @@ public class FtpConnection {
 	}
 
 	public int downloadFiles() {
-
+		System.out.println("Downloading files");
 		try {
 			String[] remoteFiles = ftpClient.listNames(remotePath);
 
@@ -55,8 +53,13 @@ public class FtpConnection {
 			for (String remoteFile : remoteFiles) {
 
 				if (remoteFile.endsWith(".csv")) {
+					System.out.println("Remote file : " + remotePath + remoteFile + " copying to "
+							+ Application.CURRENT_HOUR_FOLDER + "//" + remoteFile);
+
 					InputStream readingStream = ftpClient.retrieveFileStream(remotePath + remoteFile);
-					OutputStream writingStream = new BufferedOutputStream(new FileOutputStream(localPath + remoteFile));
+					OutputStream writingStream = new BufferedOutputStream(
+							new FileOutputStream(Application.CURRENT_HOUR_FOLDER + "//" + remoteFile));
+
 					byte[] bytesArray = new byte[4096];
 					int bytesRead = -1;
 					while ((bytesRead = readingStream.read(bytesArray)) != -1) {
@@ -66,12 +69,14 @@ public class FtpConnection {
 					boolean success = ftpClient.completePendingCommand();
 
 					if (success) {
-						System.out.println(remoteFile + " has been downloaded successfully.");
+						System.out.println(Application.CURRENT_HOUR_FOLDER + "//"  + remoteFile + " has been downloaded successfully.");
 					}
 
 					writingStream.close();
 					readingStream.close();
+
 					ftpClient.deleteFile(remotePath + remoteFile);
+
 					fileCounter++;
 				}
 			}

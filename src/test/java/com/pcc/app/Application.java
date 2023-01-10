@@ -1,9 +1,11 @@
 package com.pcc.app;
 
 import java.awt.AWTException;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.Properties;
 
 import org.openqa.selenium.WebDriver;
@@ -12,15 +14,14 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.pcc.utils.FileValidator;
 import com.pcc.utils.FtpConnection;
 import com.pcc.utils.ImportFile;
 
 /**
  * @author dell
  *
- * Create following folders 
- * C://PCC//
- * C://PCC//DOWNLOADED_FILES//
+ *         Create following folders C://PCC// C://PCC//DOWNLOADED_FILES//
  *
  */
 public class Application {
@@ -29,31 +30,41 @@ public class Application {
 
 	public static String FTP_USERNAME = null;
 	public static Properties configProps = null;
+	static LocalDateTime CURRENT_TIME = LocalDateTime.now();
+	public static String CURRENT_HOUR_FOLDER = null;
+	public static String CURRENT_HOUR_FOLDER_VALID_FILES = null;
+	public static String CURRENT_HOUR_FOLDER_IN_VALID_FILES = null;
 
 	@BeforeClass
 	public void setup() throws InterruptedException, IOException {
 
 		configProps = loadProperties();
+
 		System.setProperty("webdriver.chrome.driver", configProps.getProperty("webdriver.chrome.driver"));// "C:/Users/Administrator/Downloads/chromedriver_win32new/chromedriver.exe"
-		
-		
+
 		// Connect to FTP and download files
+		CURRENT_HOUR_FOLDER = configProps.getProperty("pcc.ftp.localpath", "c://PCC//") + CURRENT_TIME.getYear() + "//"
+				+ CURRENT_TIME.getMonth() + "//" + CURRENT_TIME.getDayOfMonth() + "//" + CURRENT_TIME.getHour();
+		CURRENT_HOUR_FOLDER_VALID_FILES = CURRENT_HOUR_FOLDER + "//valid";
+		CURRENT_HOUR_FOLDER_IN_VALID_FILES = CURRENT_HOUR_FOLDER + "//invalid";
 		
 		FtpConnection pccFTPConn = new FtpConnection();
-		if(pccFTPConn.connect()) {
-			if(pccFTPConn.downloadFiles() > 0) {
-				
+		if (pccFTPConn.connect()) {
+			if (pccFTPConn.downloadFiles() > 0) {
+
+				FileValidator.validateFiles();
+
+				driver = new ChromeDriver();
+				driver.manage().window().maximize();
+				driver.get(configProps.getProperty("pcc.website"));// "https://www25.pointclickcare.com/home/login.jsp?ESOLGuid=40_1672328090402"
+				Thread.sleep(2000);
 			}
+		} else {
+			System.out.println("Issue in FTP connection");
 		}
-		
-		driver = new ChromeDriver();
-		driver.manage().window().maximize();
-		driver.get(configProps.getProperty("pcc.website"));// "https://www25.pointclickcare.com/home/login.jsp?ESOLGuid=40_1672328090402"
-		Thread.sleep(2000);
-		
-		// Download files 
-		
-		
+
+		// Download files
+
 		// driver.manage().deleteAllCookies();
 		// driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 	}
@@ -74,18 +85,32 @@ public class Application {
 
 	@Test
 	public void Import_File() throws InterruptedException, AWTException {
-		String localPath = Application.configProps.getProperty("pcc.ftp.localpath", "C://PCC_DOWNLOADED_FILES//");
+
 		ImportFile imf = new ImportFile(driver);
 		imf.username();
 		imf.password();
-		imf.hovermenu();
-		imf.ac_pay();
-		imf.browse();
-		imf.uploadfile(localPath + "HDG_invout_HDG-2_20201130_TEST.csv"); // TODO - Add dynamic file path here : C://FTP
-																			// File//HDG_invout_HDG-2_20201130_TEST3_29-12-2022
-																			// 13-36-24.csv
-		imf.loadfile();
-		imf.exception();
+
+		File folder = new File(CURRENT_HOUR_FOLDER+"//valid");
+		File[] listOfFiles = folder.listFiles();
+		for (File file : listOfFiles) {
+			try {
+				if (file.isFile()) {
+					imf.hovermenu();
+					imf.ac_pay();
+					imf.browse();
+					imf.uploadfile(file.getCanonicalPath());
+					// TODO - Add dynamic file path here :
+					// C://FTP/File//HDG_invout_HDG-2_20201130_TEST3_29-12-2022/13-36-24.csv
+					imf.loadfile();
+					imf.exception();
+
+				} else if (file.isDirectory()) {
+					System.out.println(file.getName() + " is not file");
+				}
+			} catch (InterruptedException | IOException e) {
+				System.out.println("Error while reading file "+file.getName());
+			}
+		}
 
 	}
 
@@ -108,6 +133,7 @@ public class Application {
 	private static Properties loadProperties() {
 		// String path = "C://PCC//pcc.properties";
 		String path = "//home//dell//DSSI-PCC_WORK//CODE//HDG-Project//pcc.properties";
+		
 		try (InputStream input = new FileInputStream(path)) {
 			Properties prop = new Properties();
 			prop.load(input);
