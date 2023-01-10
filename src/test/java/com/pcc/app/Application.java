@@ -14,6 +14,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.pcc.utils.EmailConfig;
 import com.pcc.utils.FileValidator;
 import com.pcc.utils.FtpConnection;
 import com.pcc.utils.ImportFile;
@@ -35,6 +36,8 @@ public class Application {
 	public static String CURRENT_HOUR_FOLDER_VALID_FILES = null;
 	public static String CURRENT_HOUR_FOLDER_IN_VALID_FILES = null;
 
+	public static String APP_BASE_PATH = System.getenv("PCC_BASE_PATH");
+
 	@BeforeClass
 	public void setup() throws InterruptedException, IOException {
 
@@ -43,21 +46,29 @@ public class Application {
 		System.setProperty("webdriver.chrome.driver", configProps.getProperty("webdriver.chrome.driver"));// "C:/Users/Administrator/Downloads/chromedriver_win32new/chromedriver.exe"
 
 		// Connect to FTP and download files
-		CURRENT_HOUR_FOLDER = configProps.getProperty("pcc.ftp.localpath", "c://PCC//") + CURRENT_TIME.getYear() + "//"
-				+ CURRENT_TIME.getMonth() + "//" + CURRENT_TIME.getDayOfMonth() + "//" + CURRENT_TIME.getHour();
+		CURRENT_HOUR_FOLDER = APP_BASE_PATH + CURRENT_TIME.getYear() + "//" + CURRENT_TIME.getMonth() + "//"
+				+ CURRENT_TIME.getDayOfMonth() + "//" + CURRENT_TIME.getHour();
 		CURRENT_HOUR_FOLDER_VALID_FILES = CURRENT_HOUR_FOLDER + "//valid";
 		CURRENT_HOUR_FOLDER_IN_VALID_FILES = CURRENT_HOUR_FOLDER + "//invalid";
-		
+
 		FtpConnection pccFTPConn = new FtpConnection();
 		if (pccFTPConn.connect()) {
 			if (pccFTPConn.downloadFiles() > 0) {
 
-				FileValidator.validateFiles();
+				FileValidator validator = new FileValidator();
+				validator.validateFiles();
 
-				driver = new ChromeDriver();
-				driver.manage().window().maximize();
-				driver.get(configProps.getProperty("pcc.website"));// "https://www25.pointclickcare.com/home/login.jsp?ESOLGuid=40_1672328090402"
-				Thread.sleep(2000);
+				if (validator.hashValidFiles() > 0) {
+					driver = new ChromeDriver();
+					driver.manage().window().maximize();
+					driver.get(configProps.getProperty("pcc.website"));// "https://www25.pointclickcare.com/home/login.jsp?ESOLGuid=40_1672328090402"
+					Thread.sleep(2000);
+				}
+
+				if (validator.hashInvalidFiles() > 0) {
+					EmailConfig.sendEmail(true, null);
+				}
+
 			}
 		} else {
 			System.out.println("Issue in FTP connection");
@@ -90,7 +101,7 @@ public class Application {
 		imf.username();
 		imf.password();
 
-		File folder = new File(CURRENT_HOUR_FOLDER+"//valid");
+		File folder = new File(CURRENT_HOUR_FOLDER_VALID_FILES);
 		File[] listOfFiles = folder.listFiles();
 		for (File file : listOfFiles) {
 			try {
@@ -108,7 +119,7 @@ public class Application {
 					System.out.println(file.getName() + " is not file");
 				}
 			} catch (InterruptedException | IOException e) {
-				System.out.println("Error while reading file "+file.getName());
+				System.out.println("Error while reading file " + file.getName());
 			}
 		}
 
@@ -131,9 +142,9 @@ public class Application {
 	 * }
 	 */
 	private static Properties loadProperties() {
-		// String path = "C://PCC//pcc.properties";
-		String path = "//home//dell//DSSI-PCC_WORK//CODE//HDG-Project//pcc.properties";
-		
+
+		String path = APP_BASE_PATH + "//pcc.properties";
+
 		try (InputStream input = new FileInputStream(path)) {
 			Properties prop = new Properties();
 			prop.load(input);

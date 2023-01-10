@@ -16,10 +16,12 @@ import com.pcc.app.Application;
 
 public class FileValidator {
 
+	private int invalidFileCounter = 0;
+	private int validFileCounter = 0;
 	public static String[] CSV_HEADERS = { "VenCode", "InvNum", "InvDate", "FiscalYear", "FiscalMonth",
 			"TransactionAmount", "ID1099Amount", "InvoiceAmount", "Description", "AccountNum", "LineDescription" };
 
-	public static void validateFiles() {
+	public void validateFiles() {
 		System.out.println("Validating files");
 
 		File folder = new File(Application.CURRENT_HOUR_FOLDER);
@@ -30,7 +32,7 @@ public class FileValidator {
 		}
 	}
 
-	private static void readCsvFile(String inputFile) {
+	private void readCsvFile(String inputFile) {
 
 		try {
 			FileReader fileReader = new FileReader(inputFile);
@@ -45,7 +47,7 @@ public class FileValidator {
 		}
 	}
 
-	private static void validateRecords(String fileName, List<String[]> record) {
+	private void validateRecords(String fileName, List<String[]> record) {
 
 		List<String[]> validData = new ArrayList<>();
 		List<String[]> invalidData = new ArrayList<>();
@@ -124,7 +126,7 @@ public class FileValidator {
 		writeInCsv(fileName, validData, invalidData);
 	}
 
-	private static void writeInCsv(String fileName, List<String[]> validData, List<String[]> invalidData) {
+	private void writeInCsv(String fileName, List<String[]> validData, List<String[]> invalidData) {
 
 		try {
 
@@ -136,6 +138,7 @@ public class FileValidator {
 				validRecordWriter.flush();
 				validRecordWriter.close();
 				System.out.println("Data entered into ValidCsv file");
+				validFileCounter++;
 
 			}
 			if (CollectionUtils.isNotEmpty(invalidData)) {
@@ -149,11 +152,18 @@ public class FileValidator {
 				invalidRecordWriter.flush();
 				invalidRecordWriter.close();
 				System.out.println("Data entered into inValidCsv file");
-
+				invalidFileCounter++;
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public int hashInvalidFiles() {
+		return invalidFileCounter;
+	}
+	public int hashValidFiles() {
+		return validFileCounter;
 	}
 }

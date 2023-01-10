@@ -1,5 +1,6 @@
 package com.pcc.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +20,8 @@ import com.pcc.app.Application;
 
 public class EmailConfig {
 
-	public void emailsent() throws IOException {
-		
+	public static void sendEmail(boolean invalidFiles, String filePath) throws IOException {
+
 		Properties prop = new Properties();
 		prop.put("mail.smtp.host", Application.configProps.getProperty("pcc.mail.host", ""));// "smtp.gmail.com"
 		// prop.put("mail.smtp.socketFactory.class","java.net.ssl.SSLSocketFactory");
@@ -34,7 +35,8 @@ public class EmailConfig {
 
 		Session session = Session.getDefaultInstance(prop, new javax.mail.Authenticator() {
 			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-				// return new javax.mail.PasswordAuthentication("pratik.201952@gmail.com","inluqpdjgjlmcnko");
+				// return new
+				// javax.mail.PasswordAuthentication("pratik.201952@gmail.com","inluqpdjgjlmcnko");
 				return new javax.mail.PasswordAuthentication(senderEmail, senderPassword);
 			}
 		});
@@ -54,17 +56,26 @@ public class EmailConfig {
 			message.setSubject(Application.configProps.getProperty("pcc.mail.subject.prefix", "") + "");
 			message.setText(Application.configProps.getProperty("pcc.mail.text", ""));
 
-			Multipart emailContent = new MimeMultipart();
+			Multipart email = new MimeMultipart();
 			MimeBodyPart textBodyPart = new MimeBodyPart();
 			textBodyPart.setText(Application.configProps.getProperty("pcc.mail.body", ""));
 
-			MimeBodyPart pdfattachment = new MimeBodyPart();
-			String localPath = Application.configProps.getProperty("pcc.ftp.localpath", "C://PCC//DOWNLOADED_FILES//");
-			pdfattachment.attachFile(localPath+"HDG_invout_HDG-2_20201130_TEST3.csv");
+			MimeBodyPart body = new MimeBodyPart();
+			// TODO Changes file to exact path
 
-			emailContent.addBodyPart(textBodyPart);
-			emailContent.addBodyPart(pdfattachment);
-			message.setContent(emailContent);
+			if (invalidFiles) {
+				File folder = new File(Application.CURRENT_HOUR_FOLDER_IN_VALID_FILES);
+				File[] listOfFiles = folder.listFiles();
+				for (File file : listOfFiles) {
+					body.attachFile(file.getCanonicalPath());
+				}
+			} else {
+				body.attachFile(filePath);
+			}
+
+			email.addBodyPart(textBodyPart);
+			email.addBodyPart(body);
+			message.setContent(email);
 
 			System.out.println("Email sending process started");
 			// Send message
