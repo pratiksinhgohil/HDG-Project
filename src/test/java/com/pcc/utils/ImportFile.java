@@ -3,14 +3,12 @@ package com.pcc.utils;
 import java.awt.AWTException;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
-import java.security.PublicKey;
 import java.util.ArrayList;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
 
-import com.google.thirdparty.publicsuffix.PublicSuffixPatterns;
 import com.pcc.app.Application;
 
 public class ImportFile extends ImportFileOr {
