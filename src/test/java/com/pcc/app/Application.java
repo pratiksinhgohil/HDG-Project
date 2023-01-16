@@ -19,12 +19,15 @@ import com.pcc.utils.FileValidator;
 import com.pcc.utils.FtpConnection;
 import com.pcc.utils.ImportFile;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * @author dell
  *
  *         Create following folders C://PCC// C://PCC//DOWNLOADED_FILES//
  *
  */
+@Slf4j
 public class Application {
 
 	WebDriver driver;
@@ -40,11 +43,11 @@ public class Application {
 
 	@BeforeClass
 	public void setup() throws InterruptedException, IOException {
-
+		log.info("Starting application");
 		configProps = loadProperties();
 		System.setProperty("webdriver.chrome.driver", configProps.getProperty("webdriver.chrome.driver"));// "C:/Users/Administrator/Downloads/chromedriver_win32new/chromedriver.exe"
 		// Connect to FTP and download files
-		CURRENT_HOUR_FOLDER = APP_BASE_PATH +"//"+ CURRENT_TIME.getYear() + "//" + CURRENT_TIME.getMonth() + "//"
+		CURRENT_HOUR_FOLDER = APP_BASE_PATH + "//" + CURRENT_TIME.getYear() + "//" + CURRENT_TIME.getMonth() + "//"
 				+ CURRENT_TIME.getDayOfMonth() + "//" + CURRENT_TIME.getHour();
 		CURRENT_HOUR_FOLDER_VALID_FILES = CURRENT_HOUR_FOLDER + "//valid";
 		CURRENT_HOUR_FOLDER_IN_VALID_FILES = CURRENT_HOUR_FOLDER + "//invalid";
@@ -69,7 +72,7 @@ public class Application {
 
 			}
 		} else {
-			System.out.println("Issue in FTP connection");
+			log.info("Issue in FTP connection");
 		}
 		// Download files
 		// driver.manage().deleteAllCookies();
@@ -96,15 +99,15 @@ public class Application {
 		ImportFile imf = new ImportFile(driver);
 		imf.username();
 		imf.password();
-		 imf.submit();
-		System.out.println("Password entered");
+		imf.submit();
+		log.info("Password entered");
 		File folder = new File(CURRENT_HOUR_FOLDER_VALID_FILES);
 		File[] listOfFiles = folder.listFiles();
-		System.out.println("Got list of files");
+		log.info("Got list of files");
 		for (File file : listOfFiles) {
 			try {
 				if (file.isFile()) {
-					System.out.println("Uploading file "+file.getCanonicalPath());
+					log.info("Uploading file " + file.getCanonicalPath());
 					imf.hovermenu();
 					imf.ac_pay();
 					imf.browse();
@@ -116,10 +119,10 @@ public class Application {
 					imf.close();
 
 				} else if (file.isDirectory()) {
-					System.out.println(file.getName() + " is not file");
+					log.info(file.getName() + " is not file");
 				}
 			} catch (InterruptedException | IOException e) {
-				System.out.println("Error while reading file " + file.getName());
+				log.info("Error while reading file " + file.getName());
 			}
 		}
 
@@ -142,8 +145,8 @@ public class Application {
 	 * }
 	 */
 	private static Properties loadProperties() {
-		if(APP_BASE_PATH == null) {
-			System.out.println("Please set APP_BASE_PATH");
+		if (APP_BASE_PATH == null) {
+			log.info("Please set APP_BASE_PATH");
 			System.exit(0);
 		}
 		String path = APP_BASE_PATH + "//pcc.properties";
@@ -152,11 +155,11 @@ public class Application {
 			Properties prop = new Properties();
 			prop.load(input);
 			for (String key : prop.stringPropertyNames()) {
-				System.out.println(key + " >> " + prop.getProperty(key));
+				log.info(key + " >> " + prop.getProperty(key));
 			}
 			return prop;
 		} catch (IOException ex) {
-			System.out.println("Error while reading file " + path);
+			log.info("Error while reading file " + path);
 			ex.printStackTrace();
 			return null;
 		}

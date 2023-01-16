@@ -18,6 +18,8 @@ import javax.mail.internet.MimeMultipart;
 
 import com.pcc.app.Application;
 
+import lombok.extern.slf4j.Slf4j;
+@Slf4j
 public class EmailConfig {
 
 	public static void sendEmail(boolean invalidFiles, String filePath) throws IOException {
@@ -77,12 +79,12 @@ public class EmailConfig {
 			email.addBodyPart(body);
 			message.setContent(email);
 
-			System.out.println("Email sending process started");
+			log.info("Email sending process started");
 			// Send message
 			Transport.send(message);
-			System.out.println("Email sending completed");
+			log.info("Email sending completed");
 		} catch (MessagingException e) {
-			System.out.println("Error in email sending");
+			log.info("Error in email sending");
 			throw new RuntimeException(e);
 		}
 	}

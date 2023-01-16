@@ -11,6 +11,8 @@ import org.openqa.selenium.support.PageFactory;
 
 import com.pcc.app.Application;
 
+import lombok.extern.slf4j.Slf4j;
+@Slf4j
 public class ImportFile extends ImportFileOr {
 	WebDriver driver;
 
@@ -80,7 +82,7 @@ public class ImportFile extends ImportFileOr {
 		rb.keyPress(KeyEvent.VK_ENTER);
 		rb.keyRelease(KeyEvent.VK_ENTER);
 		Thread.sleep(5000);
-		System.out.println("File Imported and Downloaded Exception Report");
+		log.info("File Imported and Downloaded Exception Report");
 	}
 		public void close() throws AWTException, InterruptedException {
 			driver.quit();

@@ -12,6 +12,9 @@ import org.apache.commons.net.ftp.FTPClient;
 
 import com.pcc.app.Application;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class FtpConnection {
 	private FTPClient ftpClient = new FTPClient();
 	private final String server = Application.configProps.getProperty("pcc.ftp.host", ""); // "FTP.dssinetwork.com";
@@ -25,7 +28,7 @@ public class FtpConnection {
 	}
 
 	public boolean connect() {
-		System.out.println("Connecting to FTP");
+		log.info("Connecting to FTP");
 		try {
 			ftpClient.connect(server, port);
 			ftpClient.login(user, pass);
@@ -34,7 +37,7 @@ public class FtpConnection {
 			return true;
 
 		} catch (IOException ex) {
-			System.out.println("Error in FTP connection : " + ex.getMessage());
+			log.info("Error in FTP connection : " + ex.getMessage());
 			ex.printStackTrace();
 			return false;
 		}
@@ -42,32 +45,32 @@ public class FtpConnection {
 	}
 
 	public int downloadFiles() {
-		System.out.println("Downloading files");
+		log.info("Downloading files");
 		try {
 			String[] remoteFiles = ftpClient.listNames(remotePath);
 
-			if (remoteFiles!= null && remoteFiles.length == 0) {
-				System.out.println("No file to process at path " + remotePath);
+			if (remoteFiles != null && remoteFiles.length == 0) {
+				log.info("No file to process at path " + remotePath);
 				return 0;
 			}
 			int fileCounter = 0;
 			for (String remoteFile : remoteFiles) {
 
 				if (remoteFile.endsWith(".csv")) {
-					System.out.println("Remote file : " + remotePath +"/"+ remoteFile + " copying to "
+					log.info("Remote file : " + remotePath + "/" + remoteFile + " copying to "
 							+ Application.CURRENT_HOUR_FOLDER + "//" + remoteFile);
 
-					InputStream readingStream = ftpClient.retrieveFileStream(remotePath +"/"+ remoteFile);
-					
+					InputStream readingStream = ftpClient.retrieveFileStream(remotePath + "/" + remoteFile);
+
 					File file = new File(Application.CURRENT_HOUR_FOLDER + "//" + remoteFile);
-					file.getParentFile().mkdirs(); 
-					if(file.exists()){
+					file.getParentFile().mkdirs();
+					if (file.exists()) {
 						file.delete();
-						file.createNewFile();						
-					}else{					  
+						file.createNewFile();
+					} else {
 						file.createNewFile();
 					}
-					
+
 					OutputStream writingStream = new BufferedOutputStream(
 							new FileOutputStream(Application.CURRENT_HOUR_FOLDER + "//" + remoteFile));
 
@@ -80,7 +83,8 @@ public class FtpConnection {
 					boolean success = ftpClient.completePendingCommand();
 
 					if (success) {
-						System.out.println(Application.CURRENT_HOUR_FOLDER + "//"  + remoteFile + " has been downloaded successfully.");
+						log.info(Application.CURRENT_HOUR_FOLDER + "//" + remoteFile
+								+ " has been downloaded successfully.");
 					}
 
 					writingStream.close();
@@ -109,12 +113,12 @@ public class FtpConnection {
 			 * bytesRead); }
 			 * 
 			 * boolean success = ftpClient.completePendingCommand(); if (success) {
-			 * System.out.println("File #1 has been downloaded successfully."); }
+			 * log.info("File #1 has been downloaded successfully."); }
 			 * outputStream2.close(); inputStream.close();
 			 */
 
 		} catch (IOException ex) {
-			System.out.println("Error in FTP connection : " + ex.getMessage());
+			log.info("Error in FTP connection : " + ex.getMessage());
 			ex.printStackTrace();
 			return 0;
 		} finally {

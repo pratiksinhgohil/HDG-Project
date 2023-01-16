@@ -2,19 +2,21 @@
 <testng-results ignored="0" total="1" passed="0" failed="0" skipped="1">
   <reporter-output>
   </reporter-output>
-  <suite started-at="2023-01-10T16:25:41 IST" name="Default suite" finished-at="2023-01-10T16:26:00 IST" duration-ms="18503">
+  <suite started-at="2023-01-16T07:46:14 UTC" name="Default suite" finished-at="2023-01-16T07:46:14 UTC" duration-ms="305">
     <groups>
     </groups>
-    <test started-at="2023-01-10T16:25:41 IST" name="Default test" finished-at="2023-01-10T16:26:00 IST" duration-ms="18503">
+    <test started-at="2023-01-16T07:46:14 UTC" name="Default test" finished-at="2023-01-16T07:46:14 UTC" duration-ms="305">
       <class name="com.pcc.app.Application">
-        <test-method is-config="true" signature="setup()[pri:0, instance:com.pcc.app.Application@1d119efb]" started-at="2023-01-10T16:25:41 IST" name="setup" finished-at="2023-01-10T16:26:00 IST" duration-ms="18450" status="FAIL">
+        <test-method is-config="true" signature="setup()[pri:0, instance:com.pcc.app.Application@19e7a160]" started-at="2023-01-16T07:46:14 UTC" name="setup" finished-at="2023-01-16T07:46:14 UTC" duration-ms="221" status="FAIL">
           <exception class="java.lang.NullPointerException">
             <message>
-              <![CDATA[Cannot invoke "java.util.Properties.getProperty(String)" because "com.pcc.app.Application.configProps" is null]]>
+              <![CDATA[Cannot invoke "com.opencsv.CSVReader.close()" because "csvReader" is null]]>
             </message>
             <full-stacktrace>
-              <![CDATA[java.lang.NullPointerException: Cannot invoke "java.util.Properties.getProperty(String)" because "com.pcc.app.Application.configProps" is null
-at com.pcc.app.Application.setup(Application.java:43)
+              <![CDATA[java.lang.NullPointerException: Cannot invoke "com.opencsv.CSVReader.close()" because "csvReader" is null
+at com.pcc.utils.FileValidator.readDataLineByLine(FileValidator.java:82)
+at com.pcc.utils.FileValidator.validateFiles(FileValidator.java:38)
+at com.pcc.app.Application.setup(Application.java:60)
 at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
 at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
@@ -47,14 +49,16 @@ at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:77)
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setup -->
-        <test-method signature="Import_File()[pri:0, instance:com.pcc.app.Application@1d119efb]" started-at="2023-01-10T16:26:00 IST" name="Import_File" finished-at="2023-01-10T16:26:00 IST" duration-ms="0" status="SKIP">
+        <test-method signature="Import_File()[pri:0, instance:com.pcc.app.Application@19e7a160]" started-at="2023-01-16T07:46:14 UTC" name="Import_File" finished-at="2023-01-16T07:46:14 UTC" duration-ms="0" status="SKIP">
           <exception class="java.lang.NullPointerException">
             <message>
-              <![CDATA[Cannot invoke "java.util.Properties.getProperty(String)" because "com.pcc.app.Application.configProps" is null]]>
+              <![CDATA[Cannot invoke "com.opencsv.CSVReader.close()" because "csvReader" is null]]>
             </message>
             <full-stacktrace>
-              <![CDATA[java.lang.NullPointerException: Cannot invoke "java.util.Properties.getProperty(String)" because "com.pcc.app.Application.configProps" is null
-at com.pcc.app.Application.setup(Application.java:43)
+              <![CDATA[java.lang.NullPointerException: Cannot invoke "com.opencsv.CSVReader.close()" because "csvReader" is null
+at com.pcc.utils.FileValidator.readDataLineByLine(FileValidator.java:82)
+at com.pcc.utils.FileValidator.validateFiles(FileValidator.java:38)
+at com.pcc.app.Application.setup(Application.java:60)
 at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
 at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
@@ -87,7 +91,7 @@ at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:77)
           <reporter-output>
           </reporter-output>
         </test-method> <!-- Import_File -->
-        <test-method is-config="true" signature="closeBrowser()[pri:0, instance:com.pcc.app.Application@1d119efb]" started-at="2023-01-10T16:26:00 IST" name="closeBrowser" finished-at="1970-01-01T05:30:00 IST" duration-ms="-1673348160105" status="SKIP">
+        <test-method is-config="true" signature="closeBrowser()[pri:0, instance:com.pcc.app.Application@19e7a160]" started-at="2023-01-16T07:46:14 UTC" name="closeBrowser" finished-at="1970-01-01T00:00:00 UTC" duration-ms="-1673855174685" status="SKIP">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- closeBrowser -->
