@@ -42,11 +42,9 @@ public class Application {
 	public void setup() throws InterruptedException, IOException {
 
 		configProps = loadProperties();
-
 		System.setProperty("webdriver.chrome.driver", configProps.getProperty("webdriver.chrome.driver"));// "C:/Users/Administrator/Downloads/chromedriver_win32new/chromedriver.exe"
-
 		// Connect to FTP and download files
-		CURRENT_HOUR_FOLDER = APP_BASE_PATH + CURRENT_TIME.getYear() + "//" + CURRENT_TIME.getMonth() + "//"
+		CURRENT_HOUR_FOLDER = APP_BASE_PATH +"//"+ CURRENT_TIME.getYear() + "//" + CURRENT_TIME.getMonth() + "//"
 				+ CURRENT_TIME.getDayOfMonth() + "//" + CURRENT_TIME.getHour();
 		CURRENT_HOUR_FOLDER_VALID_FILES = CURRENT_HOUR_FOLDER + "//valid";
 		CURRENT_HOUR_FOLDER_IN_VALID_FILES = CURRENT_HOUR_FOLDER + "//invalid";
@@ -73,9 +71,7 @@ public class Application {
 		} else {
 			System.out.println("Issue in FTP connection");
 		}
-
 		// Download files
-
 		// driver.manage().deleteAllCookies();
 		// driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 	}
@@ -100,12 +96,15 @@ public class Application {
 		ImportFile imf = new ImportFile(driver);
 		imf.username();
 		imf.password();
-
+		 imf.submit();
+		System.out.println("Password entered");
 		File folder = new File(CURRENT_HOUR_FOLDER_VALID_FILES);
 		File[] listOfFiles = folder.listFiles();
+		System.out.println("Got list of files");
 		for (File file : listOfFiles) {
 			try {
 				if (file.isFile()) {
+					System.out.println("Uploading file "+file.getCanonicalPath());
 					imf.hovermenu();
 					imf.ac_pay();
 					imf.browse();
@@ -114,6 +113,7 @@ public class Application {
 					// C://FTP/File//HDG_invout_HDG-2_20201130_TEST3_29-12-2022/13-36-24.csv
 					imf.loadfile();
 					imf.exception();
+					imf.close();
 
 				} else if (file.isDirectory()) {
 					System.out.println(file.getName() + " is not file");
@@ -142,7 +142,10 @@ public class Application {
 	 * }
 	 */
 	private static Properties loadProperties() {
-
+		if(APP_BASE_PATH == null) {
+			System.out.println("Please set APP_BASE_PATH");
+			System.exit(0);
+		}
 		String path = APP_BASE_PATH + "//pcc.properties";
 
 		try (InputStream input = new FileInputStream(path)) {

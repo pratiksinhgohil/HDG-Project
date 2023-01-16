@@ -3,12 +3,14 @@ package com.pcc.utils;
 import java.awt.AWTException;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
+import java.security.PublicKey;
 import java.util.ArrayList;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
 
+import com.google.thirdparty.publicsuffix.PublicSuffixPatterns;
 import com.pcc.app.Application;
 
 public class ImportFile extends ImportFileOr {
@@ -20,20 +22,20 @@ public class ImportFile extends ImportFileOr {
 	}
 
 	public void username() throws InterruptedException {
-		uname.sendKeys(Application.configProps.getProperty("pcc.ftp.username"));
+		uname.sendKeys(Application.configProps.getProperty("pcc.website.username"));
 		Thread.sleep(2000);
 		nextbtn.click();
 		Thread.sleep(2000);
 	}
 
 	public void password() throws InterruptedException {
-		pwd.sendKeys(Application.configProps.getProperty("pcc.ftp.password"));
+		pwd.sendKeys(Application.configProps.getProperty("pcc.website.password"));
 		Thread.sleep(2000);
 	}
 
 	public void submit() throws InterruptedException {
 		submit.click();
-		Thread.sleep(2000);
+		Thread.sleep(7000);
 
 	}
 
@@ -72,9 +74,19 @@ public class ImportFile extends ImportFileOr {
 		exc_repo.click();
 		Thread.sleep(2000);
 		Robot rb = new Robot();
+		rb.keyPress(KeyEvent.VK_CONTROL);
+		rb.keyPress(KeyEvent.VK_S);
+		rb.keyRelease(KeyEvent.VK_CONTROL);
+		rb.keyRelease(KeyEvent.VK_S);
+		Thread.sleep(4000);
 		rb.keyPress(KeyEvent.VK_ENTER);
 		rb.keyRelease(KeyEvent.VK_ENTER);
-
+		Thread.sleep(5000);
+		System.out.println("File Imported and Downloaded Exception Report");
+	}
+		public void close() throws AWTException, InterruptedException {
+			driver.quit();
+		
 	}
 
 	/*
@@ -93,5 +105,6 @@ public class ImportFile extends ImportFileOr {
 	// up.sendKeys("C:\\FTP File\\HDG_invout_HDG-2_20201130_TEST3_29-12-2022
 	// 13-36-24.csv");
 	// up.click();
+	
 
 }

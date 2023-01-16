@@ -1,6 +1,7 @@
 package com.pcc.utils;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,7 +46,7 @@ public class FtpConnection {
 		try {
 			String[] remoteFiles = ftpClient.listNames(remotePath);
 
-			if (remoteFiles.length == 0) {
+			if (remoteFiles!= null && remoteFiles.length == 0) {
 				System.out.println("No file to process at path " + remotePath);
 				return 0;
 			}
@@ -53,10 +54,20 @@ public class FtpConnection {
 			for (String remoteFile : remoteFiles) {
 
 				if (remoteFile.endsWith(".csv")) {
-					System.out.println("Remote file : " + remotePath + remoteFile + " copying to "
+					System.out.println("Remote file : " + remotePath +"/"+ remoteFile + " copying to "
 							+ Application.CURRENT_HOUR_FOLDER + "//" + remoteFile);
 
-					InputStream readingStream = ftpClient.retrieveFileStream(remotePath + remoteFile);
+					InputStream readingStream = ftpClient.retrieveFileStream(remotePath +"/"+ remoteFile);
+					
+					File file = new File(Application.CURRENT_HOUR_FOLDER + "//" + remoteFile);
+					file.getParentFile().mkdirs(); 
+					if(file.exists()){
+						file.delete();
+						file.createNewFile();						
+					}else{					  
+						file.createNewFile();
+					}
+					
 					OutputStream writingStream = new BufferedOutputStream(
 							new FileOutputStream(Application.CURRENT_HOUR_FOLDER + "//" + remoteFile));
 
