@@ -4,15 +4,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
-
 import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
 import com.pcc.app.Application;
 
@@ -21,36 +19,61 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FileValidator {
 
+	private static final String DESCRIPTION = "Description";
+	private static final String ID1099_AMOUNT = "ID1099Amount";
+	private static final String LINE_DESCRIPTION = "LineDescription";
+	private static final String ACCOUNT_NUM = "AccountNum";
+	private static final String INV_DATE = "InvDate";
+	private static final String INVOICE_AMOUNT = "InvoiceAmount";
+	private static final String TRANSACTION_AMOUNT = "TransactionAmount";
+	private static final String INV_NUM = "InvNum";
+	private static final String VEN_CODE = "VenCode";
+	private static final String FISCAL_MONTH = "FiscalMonth";
+	private static final String FISCAL_YEAR = "FiscalYear";
 	private int invalidFileCounter = 0;
 	private int validFileCounter = 0;
-	public static String[] CSV_HEADERS = { "VenCode", "InvNum", "InvDate", "FiscalYear", "FiscalMonth",
-			"TransactionAmount", "ID1099Amount", "InvoiceAmount", "Description", "AccountNum", "LineDescription" };
+
+	public static String[] CSV_HEADERS = { VEN_CODE, INV_NUM, INV_DATE, FISCAL_YEAR, FISCAL_MONTH, TRANSACTION_AMOUNT,
+			ID1099_AMOUNT, INVOICE_AMOUNT, DESCRIPTION, ACCOUNT_NUM, LINE_DESCRIPTION };
 	Calendar cal = Calendar.getInstance();
-	int current_year =cal.get(Calendar.YEAR); 
+	int current_year = cal.get(Calendar.YEAR);
 	int current_month = cal.get(Calendar.MONTH) + 1;
-	
+
 	public void validateFiles() throws IOException {
-		log.info("Validating files");
+		log.info("Starting file validation");
 
 		File folder = new File(Application.CURRENT_HOUR_FOLDER);
 		File[] listOfFiles = folder.listFiles();
 		for (File file : listOfFiles) {
-			log.info("Validating file " + file.getName());
-			if(file.isFile() && file.getName().endsWith(".csv")) {
-				readCsvFile(file.getName());
-				List<HashMap<String, String>> allRecords = readDataLineByLine(file.getName());
-			}			
+			
+			if (file.isFile() && file.getName().endsWith(".csv")) {
+				log.info("Validating file : " + file.getName());
+				List<HashMap<String, String>> allRecords = readDataLineByLine(file.getCanonicalPath());
+				ValidatedData data = validation(allRecords);
+				
+				if (data.validRecords.size() > 0) {
+					validFileCounter++;
+					log.info("File {} have {} valid records", file.getName(), data.validRecords.size());
+				}
+				if (data.invalidRecords.size() > 0) {
+					log.info("File {} have {} invalid records", file.getName(), data.invalidRecords.size());
+					invalidFileCounter++;
+				}				
+				writeValidData(file.getName(), data.validRecords, true);
+				writeValidData(file.getName(), data.invalidRecords, false);				
+			}
 		}
 	}
-	
+
 	public static List<HashMap<String, String>> readDataLineByLine(String file) {
 		List<HashMap<String, String>> allRecords = new ArrayList<>();
 		List<List<String>> list2 = new ArrayList<>();
-		
-		FileReader filereader =null;
+
+		FileReader filereader = null;
 		CSVReader csvReader = null;
-				
+
 		try {
+			log.info("Reading file to validate {}", file);
 			filereader = new FileReader(file);
 			csvReader = new CSVReader(filereader);
 			String[] nextRecord;
@@ -80,105 +103,136 @@ public class FileValidator {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				csvReader.close();
-			} catch (IOException e) {
-				log.info("Error while closing reader");
-			}
 		}
 		return allRecords;
 	}
 
-	private void readCsvFile(String inputFile) {
+	public ValidatedData validation(List<HashMap<String, String>> allRecords) {
+		LocalDateTime now = LocalDateTime.now();
 
-		try {
-			FileReader fileReader = new FileReader(Application.CURRENT_HOUR_FOLDER+"//"+inputFile);
-			CSVReader csvReader = new CSVReaderBuilder(fileReader).withSkipLines(1).build();
+		List<HashMap<String, String>> validRecords = new ArrayList<>();
+		List<HashMap<String, String>> invalidRecords = new ArrayList<>();
+		label: for (int i = 0; i < allRecords.size(); i++) {
+			HashMap<String, String> valid = new HashMap<>();
+			HashMap<String, String> inValid = new HashMap<>();
+			for (int j = 0; j < allRecords.get(i).size(); j++) {
+				if (allRecords.get(i).get(FISCAL_YEAR).isEmpty()) {
+					allRecords.get(i).replace(FISCAL_YEAR, String.valueOf(now.getYear()));
+				}
+				if (!allRecords.get(i).get(FISCAL_YEAR).matches(String.valueOf(now.getYear()))) {
+					if (allRecords.get(i).get(FISCAL_MONTH).matches("1")) {
+						allRecords.get(i).replace(FISCAL_YEAR, String.valueOf(now.getYear() - 1));
+					} else {
+						allRecords.get(i).replace(FISCAL_YEAR, String.valueOf(now.getYear()));
+					}
+				}
+				if ((allRecords.get(i).get(FISCAL_MONTH).matches(String.valueOf(now.getMonthValue())))
+						|| (allRecords.get(i).get(FISCAL_MONTH).matches(String.valueOf(now.getMonthValue() - 1)))) {
 
-			List<String[]> allData = csvReader.readAll();
-			log.info("Read csv file..");
-			validateRecords(inputFile, allData);
+				} else {
+					inValid = allRecords.get(i);
+					invalidRecords.add(inValid);
+					continue label;
+				}
 
-		} catch (Exception e) {
-			e.printStackTrace();
+				if (allRecords.get(i).get(FISCAL_YEAR).matches(String.valueOf(now.getYear() - 1))
+						&& (now.getMonthValue() == 1)) {
+					if (allRecords.get(i).get(FISCAL_MONTH).matches(String.valueOf(now.getMonthValue()))
+							|| allRecords.get(i).get(FISCAL_MONTH).matches("12")) {
+					} else {
+						inValid = allRecords.get(i);
+						invalidRecords.add(inValid);
+						continue label;
+					}
+				}
+				if (allRecords.get(i).get(VEN_CODE).isEmpty()) {
+					inValid = allRecords.get(i);
+					invalidRecords.add(inValid);
+					continue label;
+				}
+				if (allRecords.get(i).get(INV_NUM).length() > 17) {
+					inValid = allRecords.get(i);
+					invalidRecords.add(inValid);
+					continue label;
+				}
+				if (allRecords.get(i).get(TRANSACTION_AMOUNT).isEmpty()) {
+					inValid = allRecords.get(i);
+					invalidRecords.add(inValid);
+					continue label;
+				}
+				if (allRecords.get(i).get(ID1099_AMOUNT).isEmpty()) {
+					inValid = allRecords.get(i);
+					invalidRecords.add(inValid);
+					continue label;
+				}
+				if (allRecords.get(i).get(INVOICE_AMOUNT).isEmpty()) {
+					inValid = allRecords.get(i);
+					invalidRecords.add(inValid);
+					continue label;
+				}
+				if (allRecords.get(i).get(INV_DATE).isEmpty()) {
+					inValid = allRecords.get(i);
+					invalidRecords.add(inValid);
+					continue label;
+				}
+				if (allRecords.get(i).get(ACCOUNT_NUM).isEmpty()) {
+					inValid = allRecords.get(i);
+					invalidRecords.add(inValid);
+					continue label;
+				}
+				if (!allRecords.get(i).get(LINE_DESCRIPTION).isEmpty()) {
+					inValid = allRecords.get(i);
+					invalidRecords.add(inValid);
+					continue label;
+				}
+				valid = allRecords.get(i);
+			}
+			validRecords.add(valid);
+		}
+		return new ValidatedData(validRecords, invalidRecords);
+	}
+
+	public class ValidatedData {
+		List<HashMap<String, String>> validRecords;
+		List<HashMap<String, String>> invalidRecords;
+
+		public ValidatedData(List<HashMap<String, String>> validRecords, List<HashMap<String, String>> invalidRecords) {
+			this.validRecords = validRecords;
+			this.invalidRecords = invalidRecords;
 		}
 	}
 
-	private void validateRecords(String fileName, List<String[]> record) {
-		for (String[] row : record) {
+	public static void writeValidData(String fileName, List<HashMap<String, String>> records, boolean validData) {
+		String filePath = null;
+		String message = null;
+		
+		if (validData) {
+			filePath = Application.CURRENT_HOUR_FOLDER_VALID_FILES + "//" + fileName;
+			message = "Valid records are empty";
+		} else {
+			filePath = Application.CURRENT_HOUR_FOLDER_IN_VALID_FILES + "//" + fileName;
+			message = "Invalid records are empty";
+		}
+
+		if (records.isEmpty()) {
+			log.info(message);
+		} else {
 			
-		}
-		/*
-		 * List<String[]> validData = new ArrayList<>(); List<String[]> invalidData =
-		 * new ArrayList<>();
-		 * 
-		 * Calendar cal = Calendar.getInstance(); int current_year =
-		 * cal.get(Calendar.YEAR); int current_month = cal.get(Calendar.MONTH) + 1; //
-		 * here month number are 0 based that's why added 1
-		 * 
-		 * for (String[] row : record) { int count = 0;
-		 * 
-		 * for (int i = 0; i < row.length; i++) {
-		 * 
-		 * if (row[i] == row[0] && row[0].isEmpty()) { break; } if (row[i] == row[1] &&
-		 * row[1].isEmpty() || row[1].length() > 17) { break; } if (row[i] == row[2] &&
-		 * row[2].isEmpty()) { break; } if (row[i] == row[3] && row[3].isEmpty() &&
-		 * row[3] != null) { if (row[3].matches(String.valueOf(current_year))) { row[3]
-		 * = String.valueOf(current_year); } } if (row[i] == row[4]) {
-		 * 
-		 * if (row[4] == null || row[4].isEmpty()) { row[4] =
-		 * String.valueOf(current_year); } else if (current_month == 1) { if
-		 * (!row[4].matches(String.valueOf(current_month))) { break; } else { if
-		 * (row[4].matches(String.valueOf(12))) { row[3] = String.valueOf(current_year -
-		 * 1); } else { row[3] = String.valueOf(current_year); row[4] =
-		 * String.valueOf(current_month); } } } else if (current_month != 1) { if
-		 * (row[4].matches(String.valueOf(current_month)) ||
-		 * row[4].matches(String.valueOf(current_month - 1))) { } } } if (row[i] ==
-		 * row[5] && row[5].isEmpty()) { break; } if (row[i] == row[7] &&
-		 * row[7].isEmpty()) { break; } if (row[i] == row[9] && row[9].isEmpty()) {
-		 * break; } if (row[i] == row[10] && !row[10].isEmpty()) { break; } else {
-		 * count++; } } if (count == 11) { validData.add(row); } else if (count < 11) {
-		 * invalidData.add(row); } } log.info("Total valid record: " +
-		 * validData.size()); log.info("Total invalid record: " +
-		 * invalidData.size());
-		 */
-		writeInCsv(fileName, record, null);
-	}
-
-	private void writeInCsv(String fileName, List<String[]> validData, List<String[]> invalidData) {
-
-		try {
-
-			if (CollectionUtils.isNotEmpty(validData)) {
-				createFile(Application.CURRENT_HOUR_FOLDER_VALID_FILES + "//" + fileName);
-				CSVWriter validRecordWriter = new CSVWriter(
-						new FileWriter(Application.CURRENT_HOUR_FOLDER_VALID_FILES + "//" + fileName));
-
-				validRecordWriter.writeNext(CSV_HEADERS);
-				validRecordWriter.writeAll(validData);
-				validRecordWriter.flush();
-				validRecordWriter.close();
-				log.info("Data entered into ValidCsv file");
-				validFileCounter++;
-
+			try {
+				createFile(filePath);
+				FileWriter outputfile = new FileWriter(filePath);
+				CSVWriter writer = new CSVWriter(outputfile);
+				String[] data = records.get(0).keySet().toArray(new String[0]);
+				writer.writeNext(data);
+				for (int i = 0; i < records.size(); i++) {
+					data = records.get(i).values().toArray(new String[0]);
+					writer.writeNext(data);
+				}
+				writer.close();
+			} catch (IOException e) {
+				log.info("Exception error");
+				e.printStackTrace();
 			}
-			if (CollectionUtils.isNotEmpty(invalidData)) {
-				createFile(Application.CURRENT_HOUR_FOLDER_IN_VALID_FILES + "//" + fileName);
-				CSVWriter invalidRecordWriter = new CSVWriter(
-						new FileWriter(Application.CURRENT_HOUR_FOLDER_IN_VALID_FILES + "//" + fileName));
-
-				List<String[]> opInValid = invalidData;
-				invalidRecordWriter.writeNext(CSV_HEADERS);
-				invalidRecordWriter.writeAll(opInValid);
-				invalidRecordWriter.flush();
-				invalidRecordWriter.close();
-				log.info("Data entered into inValidCsv file");
-				invalidFileCounter++;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -190,8 +244,9 @@ public class FileValidator {
 		return validFileCounter;
 	}
 
-	public void createFile(String path) {
+	public static void createFile(String path) {
 		try {
+			log.info("Creating file {}",path);
 			File file = new File(path);
 			file.getParentFile().mkdirs();
 			if (file.exists()) {

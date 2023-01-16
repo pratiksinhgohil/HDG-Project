@@ -21,12 +21,6 @@ import com.pcc.utils.ImportFile;
 
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * @author dell
- *
- *         Create following folders C://PCC// C://PCC//DOWNLOADED_FILES//
- *
- */
 @Slf4j
 public class Application {
 
@@ -40,10 +34,11 @@ public class Application {
 	public static String CURRENT_HOUR_FOLDER_IN_VALID_FILES = null;
 
 	public static String APP_BASE_PATH = System.getenv("PCC_BASE_PATH");
+	public boolean anyValidFile = false;
 
 	@BeforeClass
 	public void setup() throws InterruptedException, IOException {
-		log.info("Starting application");
+		log.info("Starting file processing ");
 		configProps = loadProperties();
 		System.setProperty("webdriver.chrome.driver", configProps.getProperty("webdriver.chrome.driver"));// "C:/Users/Administrator/Downloads/chromedriver_win32new/chromedriver.exe"
 		// Connect to FTP and download files
@@ -52,6 +47,8 @@ public class Application {
 		CURRENT_HOUR_FOLDER_VALID_FILES = CURRENT_HOUR_FOLDER + "//valid";
 		CURRENT_HOUR_FOLDER_IN_VALID_FILES = CURRENT_HOUR_FOLDER + "//invalid";
 
+		log.info("Processing for folder > "+CURRENT_HOUR_FOLDER);
+		
 		FtpConnection pccFTPConn = new FtpConnection();
 		if (pccFTPConn.connect()) {
 			if (pccFTPConn.downloadFiles() > 0) {
@@ -60,6 +57,7 @@ public class Application {
 				validator.validateFiles();
 
 				if (validator.hashValidFiles() > 0) {
+					anyValidFile = true;
 					driver = new ChromeDriver();
 					driver.manage().window().maximize();
 					driver.get(configProps.getProperty("pcc.website"));// "https://www25.pointclickcare.com/home/login.jsp?ESOLGuid=40_1672328090402"
@@ -86,8 +84,10 @@ public class Application {
 	@AfterClass
 	public void closeBrowser() {
 		try {
-			driver.close();
-			Runtime.getRuntime().exec("taskkill /F /IM chromedriver*");
+			if (driver != null) {
+				driver.close();
+				Runtime.getRuntime().exec("taskkill /F /IM chromedriver*");
+			}
 		} catch (Exception anException) {
 			anException.printStackTrace();
 		}
@@ -95,34 +95,38 @@ public class Application {
 
 	@Test
 	public void Import_File() throws InterruptedException, AWTException {
+		if(!anyValidFile) {
+			log.info("No files to process , check valid and invalid folders at {} ",CURRENT_HOUR_FOLDER);
+		}else {
 
-		ImportFile imf = new ImportFile(driver);
-		imf.username();
-		imf.password();
-		imf.submit();
-		log.info("Password entered");
-		File folder = new File(CURRENT_HOUR_FOLDER_VALID_FILES);
-		File[] listOfFiles = folder.listFiles();
-		log.info("Got list of files");
-		for (File file : listOfFiles) {
-			try {
-				if (file.isFile()) {
-					log.info("Uploading file " + file.getCanonicalPath());
-					imf.hovermenu();
-					imf.ac_pay();
-					imf.browse();
-					imf.uploadfile(file.getCanonicalPath());
-					// TODO - Add dynamic file path here :
-					// C://FTP/File//HDG_invout_HDG-2_20201130_TEST3_29-12-2022/13-36-24.csv
-					imf.loadfile();
-					imf.exception();
-					imf.close();
+			ImportFile imf = new ImportFile(driver);
+			imf.username();
+			imf.password();
+			imf.submit();
+			log.info("Password entered");
+			File folder = new File(CURRENT_HOUR_FOLDER_VALID_FILES);
+			File[] listOfFiles = folder.listFiles();
+			log.info("Got list of files");
+			for (File file : listOfFiles) {
+				try {
+					if (file.isFile()) {
+						log.info("Uploading file " + file.getCanonicalPath());
+						imf.hovermenu();
+						imf.ac_pay();
+						imf.browse();
+						imf.uploadfile(file.getCanonicalPath());
+						// TODO - Add dynamic file path here :
+						// C://FTP/File//HDG_invout_HDG-2_20201130_TEST3_29-12-2022/13-36-24.csv
+						imf.loadfile();
+						imf.exception();
+						imf.close();
 
-				} else if (file.isDirectory()) {
-					log.info(file.getName() + " is not file");
+					} else if (file.isDirectory()) {
+						log.info(file.getName() + " is not file");
+					}
+				} catch (InterruptedException | IOException e) {
+					log.info("Error while reading file " + file.getName());
 				}
-			} catch (InterruptedException | IOException e) {
-				log.info("Error while reading file " + file.getName());
 			}
 		}
 

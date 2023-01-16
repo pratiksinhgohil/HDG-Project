@@ -28,7 +28,7 @@ public class FtpConnection {
 	}
 
 	public boolean connect() {
-		log.info("Connecting to FTP");
+		log.info("Connecting to FTP server {}",server);
 		try {
 			ftpClient.connect(server, port);
 			ftpClient.login(user, pass);
