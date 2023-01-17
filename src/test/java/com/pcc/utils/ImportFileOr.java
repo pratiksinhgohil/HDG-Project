@@ -34,6 +34,14 @@ public class ImportFileOr {
 
 	@FindBy(how=How.XPATH,using="//*[@id=\"msg\"]/input[1]")
 	public WebElement exc_repo;
+	
+	@FindBy(how=How.XPATH,using="//*[@id=\"msg\"]/input[1]")
+	public WebElement commit;
+	
+	@FindBy(how=How.XPATH,using="//*[@id=\"msg\"]/input")
+	public WebElement close;
+	
+	
 
 	
 }

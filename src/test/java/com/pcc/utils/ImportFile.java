@@ -3,9 +3,14 @@ package com.pcc.utils;
 import java.awt.AWTException;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
 
@@ -79,10 +84,26 @@ public class ImportFile extends ImportFileOr {
 		rb.keyRelease(KeyEvent.VK_CONTROL);
 		rb.keyRelease(KeyEvent.VK_S);
 		Thread.sleep(4000);
+		String downloadFilepath = "C:/Users/ER/Documents/QRC";
+		HashMap<String, Object> chromePrefs = new HashMap<String, Object>();
+		chromePrefs.put("profile.default_content_settings.popups", 0);
+		chromePrefs.put("download.default_directory", downloadFilepath);
+		String s = Keys.chord(Keys.CONTROL, "enter");
+		ChromeOptions options = new ChromeOptions();
+		Map<String, Object> prefs = new HashMap<String, Object>();
+	    prefs.put("profile.default_content_settings.popups", 0);
+	    prefs.put("download.default_directory",System.getProperty("user.dir") + File.separator + "externalFiles" + File.separator + "New folder"+ "");
+		options.setExperimentalOption("prefs", prefs);
+		//ChromeDriver driver= new ChromeDriver(options)
 		rb.keyPress(KeyEvent.VK_ENTER);
 		rb.keyRelease(KeyEvent.VK_ENTER);
 		Thread.sleep(5000);
 		log.info("File Imported and Downloaded Exception Report");
+	}
+	
+	public void commit() {
+		commit.click();
+		close.click();
 	}
 		public void close() throws AWTException, InterruptedException {
 			driver.quit();

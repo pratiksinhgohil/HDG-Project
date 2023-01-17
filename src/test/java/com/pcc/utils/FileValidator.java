@@ -160,11 +160,10 @@ public class FileValidator {
 					invalidRecords.add(inValid);
 					continue label;
 				}
-				if (allRecords.get(i).get(ID1099_AMOUNT).isEmpty()) {
-					inValid = allRecords.get(i);
-					invalidRecords.add(inValid);
-					continue label;
-				}
+				/*
+				 * if (!allRecords.get(i).get(ID1099_AMOUNT).isEmpty()) { inValid =
+				 * allRecords.get(i); invalidRecords.add(inValid); continue label; }
+				 */
 				if (allRecords.get(i).get(INVOICE_AMOUNT).isEmpty()) {
 					inValid = allRecords.get(i);
 					invalidRecords.add(inValid);
