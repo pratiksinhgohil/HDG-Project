@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
+<testng-results ignored="1" total="2" passed="1" failed="0" skipped="0">
   <reporter-output>
   </reporter-output>
-  <suite started-at="2023-01-17T11:18:39 UTC" name="Default suite" finished-at="2023-01-17T11:19:57 UTC" duration-ms="77967">
+  <suite started-at="2023-01-19T10:05:45 UTC" name="Default suite" finished-at="2023-01-19T10:06:44 UTC" duration-ms="59417">
     <groups>
     </groups>
-    <test started-at="2023-01-17T11:18:39 UTC" name="Default test" finished-at="2023-01-17T11:19:57 UTC" duration-ms="77967">
+    <test started-at="2023-01-19T10:05:45 UTC" name="Default test" finished-at="2023-01-19T10:06:44 UTC" duration-ms="59417">
       <class name="com.pcc.app.Application">
-        <test-method is-config="true" signature="setup()[pri:0, instance:com.pcc.app.Application@4e31276e]" started-at="2023-01-17T11:18:39 UTC" name="setup" finished-at="2023-01-17T11:19:10 UTC" duration-ms="30945" status="PASS">
+        <test-method is-config="true" signature="setup()[pri:0, instance:com.pcc.app.Application@18e36d14]" started-at="2023-01-19T10:05:45 UTC" name="setup" finished-at="2023-01-19T10:05:47 UTC" duration-ms="2730" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setup -->
-        <test-method signature="Import_File()[pri:0, instance:com.pcc.app.Application@4e31276e]" started-at="2023-01-17T11:19:10 UTC" name="Import_File" finished-at="2023-01-17T11:19:57 UTC" duration-ms="46954" status="PASS">
+        <test-method signature="DryRun()[pri:0, instance:com.pcc.app.Application@18e36d14]" started-at="2023-01-19T10:05:47 UTC" name="DryRun" finished-at="2023-01-19T10:06:44 UTC" duration-ms="56571" status="PASS">
           <reporter-output>
           </reporter-output>
-        </test-method> <!-- Import_File -->
-        <test-method is-config="true" signature="closeBrowser()[pri:0, instance:com.pcc.app.Application@4e31276e]" started-at="2023-01-17T11:19:57 UTC" name="closeBrowser" finished-at="2023-01-17T11:19:57 UTC" duration-ms="28" status="PASS">
+        </test-method> <!-- DryRun -->
+        <test-method is-config="true" signature="closeBrowser()[pri:0, instance:com.pcc.app.Application@18e36d14]" started-at="2023-01-19T10:06:44 UTC" name="closeBrowser" finished-at="2023-01-19T10:06:44 UTC" duration-ms="69" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- closeBrowser -->

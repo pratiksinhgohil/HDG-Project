@@ -7,7 +7,7 @@
         <methods>
           <include name="setup"/>
           <include name="closeBrowser"/>
-          <include name="Import_File"/>
+          <include name="DryRun"/>
         </methods>
       </class> <!-- com.pcc.app.Application -->
     </classes>
