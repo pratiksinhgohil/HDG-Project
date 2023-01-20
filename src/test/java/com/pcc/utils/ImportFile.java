@@ -1,33 +1,24 @@
 package com.pcc.utils;
 
 import java.awt.AWTException;
-import java.awt.Dialog;
 import java.awt.Robot;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-import java.lang.StackWalker.Option;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.Pdf;
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.print.PrintOptions;
-import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.PageFactory;
+//import org.sikuli.script.Pattern;
+//import org.sikuli.script.Screen;
 
-import com.google.common.io.Files;
 import com.pcc.app.Application;
 
-import ch.qos.logback.core.joran.action.Action;
+import io.netty.channel.ThreadPerChannelEventLoopGroup;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -89,41 +80,52 @@ public class ImportFile extends ImportFileOr {
 		Thread.sleep(2000);
 	}
 
-	public void exception(String fileName) throws AWTException, InterruptedException, IOException {
+	public void exception(String csvFileName, String errorFilePath) throws Exception {
+
+		System.out.println("Uploaded file path" + csvFileName);
+		System.out.println("Error report PDF " + errorFilePath);
 		System.out.println("exc_repo.getAccessibleName() >>> " + exc_repo.getAccessibleName());
 		if (exc_repo.getAccessibleName().equalsIgnoreCase("Exceptions Report")) {
 
-
+			Toolkit toolkit = Toolkit.getDefaultToolkit();
+			Clipboard clipboard = toolkit.getSystemClipboard();
+			StringSelection strSel = new StringSelection(errorFilePath);
+			clipboard.setContents(strSel, null);
 			exc_repo.click();
 			Thread.sleep(4000);
 			Robot rb = new Robot();
+
 			rb.keyPress(KeyEvent.VK_CONTROL);
 			rb.keyPress(KeyEvent.VK_P);
 			rb.keyRelease(KeyEvent.VK_CONTROL);
 			rb.keyRelease(KeyEvent.VK_P);
 			Thread.sleep(5000);
+			// Screen src=new Screen();
+			// Pattern fptn2 = new Pattern("C:\\Users\\ER\\Documents\\Files\\Capture.png");
+			// src.type(fptn2, "Errorreport");
+			Thread.sleep(1000);
+
 			rb.keyPress(KeyEvent.VK_ENTER);
 			rb.keyRelease(KeyEvent.VK_ENTER);
-			
-			 Thread.sleep(3000);
+
+			Thread.sleep(3000);
 			rb.keyPress(KeyEvent.VK_CONTROL);
 			rb.keyPress(KeyEvent.VK_V);
 			rb.keyRelease(KeyEvent.VK_V);
 			rb.keyRelease(KeyEvent.VK_CONTROL);
 			Thread.sleep(3000);
 
-
 			rb.keyPress(KeyEvent.VK_ENTER);
 			rb.keyRelease(KeyEvent.VK_ENTER);
 			Thread.sleep(5000);
-			
-			
-			//option.addArguments("--disable-extensions");
-			//option.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, false);
-			//ChromeDriver driver2= new ChromeDriver(options);
+
 			
 			Thread.sleep(5000);
 			log.info("File Imported and Downloaded Exception Report");
+
+			// Send email
+			
+			//
 		} else if (exc_repo.getAccessibleName().equalsIgnoreCase("Commit")) {
 			commit();
 		} else {
@@ -132,16 +134,35 @@ public class ImportFile extends ImportFileOr {
 
 	}
 
-	public void commit() {
+	public void commit() throws Exception {
+		Thread.sleep(2000);
 		commit.click();
-		close.click();
-	}
 
-	public void close() throws AWTException, InterruptedException {
-		driver.quit();
-
+		try {
+			Thread.sleep(2000);
+			Alert alert = driver.switchTo().alert();
+			String alertText = alert.getText();
+			System.out.println("ERROR: (ALERT BOX DETECTED) - ALERT MSG : " + alertText);
+			alert.accept();
+			Thread.sleep(2000);
+			close.click();
+			Thread.sleep(5000);
+			Robot rb =new Robot();
+			rb.keyPress(KeyEvent.VK_ALT);
+			rb.keyPress(KeyEvent.VK_F4);
+			rb.keyRelease(KeyEvent.VK_ALT);
+			rb.keyRelease(KeyEvent.VK_F4);
+		} catch (Exception e) {
+			
+			
+			// throw(e);
+		}
 	}
 	
+	
+
+	}
+
 	/*
 	 * driver.switchTo().window(oldTab);
 	 * 
@@ -159,4 +180,4 @@ public class ImportFile extends ImportFileOr {
 	// 13-36-24.csv");
 	// up.click();
 
-}
+
