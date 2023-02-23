@@ -93,13 +93,13 @@ public class EmailConfig {
 		Multipart email = new MimeMultipart();
 
 		MimeMessage message = getMessage();
-		message.setSubject("Invalid files(While upload) of processing hour " + Application.CURRENT_HOUR_FOLDER);
+		message.setSubject("Invalid files(While upload) of processing hour " + Application.CURRENT_HOUR);
 
 		MimeBodyPart textBodyPart = new MimeBodyPart();
 
 		StringBuilder sb = new StringBuilder(
-				"Attachment contains files for processing hour " + Application.CURRENT_HOUR_FOLDER
-						+ " which was generated error repors when it was uploaded to Accounts Payable");
+				"Attachment contains files for processing hour " + Application.CURRENT_HOUR
+						+ " which was generated error reports when it was uploaded to Accounts Payable");
 		sb.append("<br> The PDF attachment contains error details and csv contains data which was uploaded.");
 		sb.append("<br> Please correct csv file and upload to FTP again.");
 	 
@@ -111,7 +111,7 @@ public class EmailConfig {
 			email.addBodyPart(pdfAttachment);
 
 			MimeBodyPart csvAttachment = new MimeBodyPart();
-			csvAttachment.attachFile(pdfFile);
+			csvAttachment.attachFile(csvFile);
 			email.addBodyPart(csvAttachment);
 
 		} catch (MessagingException | IOException e) {

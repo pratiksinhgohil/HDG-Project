@@ -1,5 +1,6 @@
 package com.pcc.app;
 
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -16,6 +19,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -47,12 +51,15 @@ public class Application {
 
 	public static String EMAIL_SENDER = null;
 	public static List<InternetAddress> EMAIL_RECEIVER = new ArrayList<>();
+	public ConcurrentHashMap<String, String> CODE_MAPPER = new ConcurrentHashMap<>();
 	ChromeOptions option = new ChromeOptions();
 
 	@BeforeClass
 	public void setup() throws InterruptedException, IOException, AddressException, MessagingException {
 		log.info("Starting file processing ");
 		configProps = loadProperties();
+		
+		loadCodeMapper();
 
 		EMAIL_SENDER = Application.configProps.getProperty("pcc.mail.sender.email");
 	 
@@ -73,6 +80,11 @@ public class Application {
 		HashMap<String, Object> chromePrefs = new HashMap<String, Object>();
 		chromePrefs.put("profile.default_content_settings.popups", 0);
 		chromePrefs.put("download.default_directory", ERROR_REPORT_PATH);
+
+		System.setProperty("webdriver.chrome.silentOutput", "true");
+		java.util.logging.Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
+		System.setProperty(ChromeDriverService.CHROME_DRIVER_SILENT_OUTPUT_PROPERTY, "true"); 
+
 		option.setExperimentalOption("prefs", chromePrefs);
 		log.info("Processing for folder > " + CURRENT_HOUR_FOLDER);
 		createDir(ERROR_REPORT_PATH);
@@ -112,13 +124,14 @@ public class Application {
 	 * Thread.sleep(2000); driver.close(); }
 	 */
 
+
 	@AfterClass
 	public void closeBrowser() {
 		try {
 			if (driver != null) {
 				driver.close();
-
 				Runtime.getRuntime().exec("taskkill /F /IM chromedriver*");
+			
 			}
 		} catch (Exception anException) {
 			anException.printStackTrace();
@@ -136,6 +149,8 @@ public class Application {
 			imf.username();
 			imf.password();
 			imf.submit();
+			//imf.hovermenu();
+			//imf.ac_pay();
 			log.info("Password entered");
 			File folder = new File(CURRENT_HOUR_FOLDER_VALID_FILES);
 			File[] listOfFiles = folder.listFiles();
@@ -144,14 +159,15 @@ public class Application {
 				try {
 					if (file.isFile()) {
 						log.info("Uploading file " + file.getCanonicalPath());
-						imf.hovermenu();
-						imf.ac_pay();
-						imf.browse();
+						
+						//imf.browse();
 						imf.uploadfile(file.getCanonicalPath());
+						
 						// Success
 						// imf.uploadfile("C://PCC//2023//JANUARY//17//11//HDG_invout_HDG-143_20230109_054907369_1.csv");
 						// Failure
 						// imf.uploadfile("C://PCC//2023//JANUARY//17//11//HDG_invout_HDG-108_20201130_TEST2.csv");
+						imf.checkfile(file.getName());
 						imf.loadfile();
 						imf.exception(file.getCanonicalPath(), (Application.ERROR_REPORT_PATH + "//" + file.getName())
 								.replace("//", "\\").replace(".csv", ".pdf"));
@@ -195,9 +211,9 @@ public class Application {
 		imf.password();
 		imf.submit();
 
-		imf.hovermenu();
-		imf.ac_pay();
-		imf.browse();
+		//imf.hovermenu();
+		//imf.ac_pay();
+	//imf.browse();
 		// imf.uploadfile(file.getCanonicalPath());
 		// Success
 		// imf.uploadfile("C://PCC//2023//JANUARY//17//11//HDG_invout_HDG-143_20230109_054907369_1.csv");
@@ -241,5 +257,10 @@ public class Application {
 		File file = new File(path + "//");
 		boolean status = file.mkdirs();
 		System.out.println("Error report folder created ::" + status);
+	}
+
+	private void loadCodeMapper() {
+		
+		
 	}
 }

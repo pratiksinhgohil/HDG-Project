@@ -57,10 +57,11 @@ public class FtpConnection {
 			for (String remoteFile : remoteFiles) {
 
 				if (remoteFile.endsWith(".csv")) {
-					log.info("Remote file : " + remotePath + "/" + remoteFile + " copying to "
+					String remoteFileToDelete = remotePath +"/"+ remoteFile;
+					log.info("Remote file : " + remoteFileToDelete + " copying to "
 							+ Application.CURRENT_HOUR_FOLDER + "//" + remoteFile);
 
-					InputStream readingStream = ftpClient.retrieveFileStream(remotePath + "/" + remoteFile);
+					InputStream readingStream = ftpClient.retrieveFileStream(remoteFileToDelete);
 
 					File file = new File(Application.CURRENT_HOUR_FOLDER + "//" + remoteFile);
 					file.getParentFile().mkdirs();
@@ -90,7 +91,8 @@ public class FtpConnection {
 					writingStream.close();
 					readingStream.close();
 
-					ftpClient.deleteFile(remotePath + remoteFile);
+					boolean deleteFile = true;// ftpClient.deleteFile(remoteFileToDelete);
+					log.info("Remote file {} delete status {}",remoteFileToDelete,deleteFile);
 
 					fileCounter++;
 				}

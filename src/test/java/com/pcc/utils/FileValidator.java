@@ -168,26 +168,30 @@ public class FileValidator {
 
 				// FISCAL_MONTH Should be current or previous month and must not be null or
 				// empty
-				if ((allRecords.get(i).getOrDefault(FISCAL_MONTH, "").matches(String.valueOf(now.getMonthValue())))
+				int monthValue = now.getMonthValue();
+				String month = String.valueOf(monthValue);
+				if ((allRecords.get(i).getOrDefault(FISCAL_MONTH, "").matches(month))
 						|| (allRecords.get(i).getOrDefault(FISCAL_MONTH, "")
-								.matches(String.valueOf(now.getMonthValue() - 1)))) {
+								.matches(String.valueOf(monthValue - 1)))) {
 
 				} else {
-					inValid = allRecords.get(i);
-					inValid.put(MESSAGE, "Invalid fiscal month");
-					invalidRecords.add(inValid);
-					continue label;
+					//inValid = allRecords.get(i);
+					//inValid.put(MESSAGE, "Invalid fiscal month");
+					//invalidRecords.add(inValid);
+					//continue label;
+					allRecords.get(i).replace(FISCAL_MONTH, month);
 				}
 
 				if (allRecords.get(i).get(FISCAL_YEAR).matches(String.valueOf(year - 1))
-						&& (now.getMonthValue() == 1)) {
-					if (allRecords.get(i).get(FISCAL_MONTH).matches(String.valueOf(now.getMonthValue()))
+						&& (monthValue == 1)) {
+					if (allRecords.get(i).get(FISCAL_MONTH).matches(month)
 							|| allRecords.get(i).get(FISCAL_MONTH).matches("12")) {
 					} else {
-						inValid = allRecords.get(i);
-						inValid.put(MESSAGE, "Invalid fiscal month/year info");
-						invalidRecords.add(inValid);
-						continue label;
+						//inValid = allRecords.get(i);
+						//inValid.put(MESSAGE, "Invalid fiscal month/year info");
+						//invalidRecords.add(inValid);
+						//continue label;
+						allRecords.get(i).replace(FISCAL_YEAR, String.valueOf(year));
 					}
 				}
 
@@ -222,12 +226,14 @@ public class FileValidator {
 					continue label;
 				}
 				// Line description allowed as blank
-				// if (!allRecords.get(i).getOrDefault(LINE_DESCRIPTION,"").isBlank()) {
+				if (!allRecords.get(i).getOrDefault(LINE_DESCRIPTION,"").isBlank()) {
+					
 				// inValid = allRecords.get(i);
 				// inValid.put(MESSAGE, "Invalid LineDescription");
 				// invalidRecords.add(inValid);
 				// continue label;
-				// }
+					allRecords.get(i).replace(LINE_DESCRIPTION, "");
+				}
 				valid = allRecords.get(i);
 			}
 			validRecords.add(valid);
