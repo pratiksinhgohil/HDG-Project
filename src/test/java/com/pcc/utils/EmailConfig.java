@@ -2,8 +2,6 @@ package com.pcc.utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -93,13 +91,12 @@ public class EmailConfig {
 		Multipart email = new MimeMultipart();
 
 		MimeMessage message = getMessage();
-		message.setSubject("Invalid files(While upload) of processing hour " + Application.CURRENT_HOUR);
+		message.setSubject("Exception report of "+csvFile +" of Hour " + Application.CURRENT_HOUR);
 
 		MimeBodyPart textBodyPart = new MimeBodyPart();
 
 		StringBuilder sb = new StringBuilder(
-				"Attachment contains files for processing hour " + Application.CURRENT_HOUR
-						+ " which was generated error reports when it was uploaded to Accounts Payable");
+				"Attachment contains exception report of file "+csvFile+" processing during hour " + Application.CURRENT_HOUR+".");
 		sb.append("<br> The PDF attachment contains error details and csv contains data which was uploaded.");
 		sb.append("<br> Please correct csv file and upload to FTP again.");
 	 
@@ -132,4 +129,37 @@ public class EmailConfig {
 			throw new RuntimeException(e);
 		}
 	}
+
+	public static void sendLineDescInEmail() throws AddressException, MessagingException, IOException{
+		
+
+		Multipart email = new MimeMultipart();
+		
+		MimeMessage message = getMessage();
+		message.setHeader("Content-Type", "text/html");
+		message.setContent(message, "text/html");
+		message.setSubject(Application.CURRENT_HOUR+"[ Line description details ]");
+
+		MimeBodyPart textBodyPart = new MimeBodyPart();
+
+		StringBuilder sb = new StringBuilder("Dear User");
+		sb.append("<br><br>Following records shows line description received in csv files for processing hour:  " + Application.CURRENT_HOUR+".");
+		
+		Application.LINE_DESC_FILE.entrySet().forEach(entry ->{
+			sb.append("<br><br>File : " + entry.getKey());
+			sb.append("<br><br><table border='1' style='border-collapse:collapse;border:1px solid;' cellpadding='3'><thead><tr><th>Invoice number</th><th>Line description</th></tr></thead>");
+			entry.getValue().forEach(val ->{				
+				sb.append(val);
+			});
+			sb.append("</table>");
+			
+		});
+		//textBodyPart.setText(sb.toString());
+		textBodyPart.setContent(sb.toString(), "text/html");
+		email.addBodyPart(textBodyPart);
+		message.setContent(email,"text/html");
+		sendEmail(message);
+
+	}
+	 
 }

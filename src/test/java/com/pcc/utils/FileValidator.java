@@ -55,7 +55,7 @@ public class FileValidator {
 			if (file.isFile() && file.getName().endsWith(".csv")) {
 				log.info("Validating file : " + file.getName());
 				List<LinkedHashMap<String, String>> allRecords = readDataLineByLine(file.getCanonicalPath());
-				ValidatedData data = validateAllRecords(allRecords);
+				ValidatedData data = validateAllRecords(allRecords,file.getName());
 
 				if (data.validRecords.size() > 0) {
 					validFileCounter++;
@@ -113,7 +113,7 @@ public class FileValidator {
 		return allRecords;
 	}
 
-	public ValidatedData validateAllRecords(List<LinkedHashMap<String, String>> allRecords) {
+	public ValidatedData validateAllRecords(List<LinkedHashMap<String, String>> allRecords,String fileName) {
 
 		if (skipValidation) {
 			return new ValidatedData(allRecords, new ArrayList<LinkedHashMap<String, String>>());
@@ -232,6 +232,7 @@ public class FileValidator {
 				// inValid.put(MESSAGE, "Invalid LineDescription");
 				// invalidRecords.add(inValid);
 				// continue label;
+					Application.LINE_DESC_FILE.computeIfAbsent(fileName, k -> new ArrayList<>()).add("<tr><td>"+allRecords.get(i).getOrDefault(INV_NUM, "")+"</td><td>"+allRecords.get(i).getOrDefault(LINE_DESCRIPTION, "")+"</td></tr>");
 					allRecords.get(i).replace(LINE_DESCRIPTION, "");
 				}
 				valid = allRecords.get(i);

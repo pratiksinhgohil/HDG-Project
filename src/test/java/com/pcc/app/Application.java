@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +31,7 @@ import com.pcc.utils.FileValidator;
 import com.pcc.utils.FtpConnection;
 import com.pcc.utils.ImportFile;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -54,13 +56,13 @@ public class Application {
 	public ConcurrentHashMap<String, String> CODE_MAPPER = new ConcurrentHashMap<>();
 	ChromeOptions option = new ChromeOptions();
 
+	public static ConcurrentHashMap<String, List<String>> LINE_DESC_FILE = new ConcurrentHashMap<>();
+	
 	@BeforeClass
 	public void setup() throws InterruptedException, IOException, AddressException, MessagingException {
 		log.info("Starting file processing ");
 		configProps = loadProperties();
 		
-		loadCodeMapper();
-
 		EMAIL_SENDER = Application.configProps.getProperty("pcc.mail.sender.email");
 	 
 		Application.configProps.getProperty("pcc.mail.sender.password");
@@ -68,7 +70,9 @@ public class Application {
 		for (String receivers : receiverEmails) {
 			EMAIL_RECEIVER.add(new InternetAddress(receivers));
 		}
-		System.setProperty("webdriver.chrome.driver", configProps.getProperty("webdriver.chrome.driver"));// "C:/Users/Administrator/Downloads/chromedriver_win32new/chromedriver.exe"
+		WebDriverManager.chromedriver().setup();
+		//WebDriver driver = new ChromeDriver();
+		//System.setProperty("webdriver.chrome.driver", configProps.getProperty("webdriver.chrome.driver"));// "C:/Users/Administrator/Downloads/chromedriver_win32new/chromedriver.exe"
 		// Connect to FTP and download files
 		CURRENT_HOUR = CURRENT_TIME.getYear() + "//" + CURRENT_TIME.getMonth() + "//" + CURRENT_TIME.getDayOfMonth()
 				+ "//" + CURRENT_TIME.getHour();
@@ -108,19 +112,20 @@ public class Application {
 				if (validator.hashInvalidFiles() > 0) {
 					EmailConfig.sendInvalidFiles();
 				}
+				
+				if(!LINE_DESC_FILE.isEmpty()) {
+					EmailConfig.sendLineDescInEmail();
+				}
 
 			}
 		} else {
 			log.info("Issue in FTP connection");
 		}
-		// Download files
-		// driver.manage().deleteAllCookies();
-		// driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-
 	}
 
 	/*
-	 * @AfterClass public void finish() throws InterruptedException {
+	 * @AfterClass 
+	 * public void finish() throws InterruptedException {
 	 * Thread.sleep(2000); driver.close(); }
 	 */
 
@@ -161,13 +166,14 @@ public class Application {
 						log.info("Uploading file " + file.getCanonicalPath());
 						
 						//imf.browse();
+						imf.checkfile(file.getName());
 						imf.uploadfile(file.getCanonicalPath());
 						
 						// Success
 						// imf.uploadfile("C://PCC//2023//JANUARY//17//11//HDG_invout_HDG-143_20230109_054907369_1.csv");
 						// Failure
 						// imf.uploadfile("C://PCC//2023//JANUARY//17//11//HDG_invout_HDG-108_20201130_TEST2.csv");
-						imf.checkfile(file.getName());
+						
 						imf.loadfile();
 						imf.exception(file.getCanonicalPath(), (Application.ERROR_REPORT_PATH + "//" + file.getName())
 								.replace("//", "\\").replace(".csv", ".pdf"));
@@ -210,22 +216,9 @@ public class Application {
 		imf.username();
 		imf.password();
 		imf.submit();
-
-		//imf.hovermenu();
-		//imf.ac_pay();
-	//imf.browse();
-		// imf.uploadfile(file.getCanonicalPath());
-		// Success
-		// imf.uploadfile("C://PCC//2023//JANUARY//17//11//HDG_invout_HDG-143_20230109_054907369_1.csv");
-
-		// Failure
 		String filePath = "C:\\PCC\\2023\\JANUARY\\20\\6\\HDG_invout_HDG-2_20201130_TEST3.csv";
 		imf.uploadfile(filePath);
-		// TODO - Add dynamic file path here :
-		// C://FTP/File//HDG_invout_HDG-2_20201130_TEST3_29-12-2022/13-36-24.csv
 		imf.loadfile();
-		// imf.exception((Application.ERROR_REPORT_PATH+"//HDG_invout_HDG-2_20201130_TEST3.csv").replace("//",
-		// "\\"));
 		imf.exception(filePath, (Application.ERROR_REPORT_PATH + "//" + "HDG_invout_HDG-2_20201130_TEST3.csv")
 				.replace("//", "\\").replace(".csv", ".pdf"));
 
@@ -257,10 +250,5 @@ public class Application {
 		File file = new File(path + "//");
 		boolean status = file.mkdirs();
 		System.out.println("Error report folder created ::" + status);
-	}
-
-	private void loadCodeMapper() {
-		
-		
 	}
 }
