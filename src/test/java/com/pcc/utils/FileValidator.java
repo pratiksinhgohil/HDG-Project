@@ -225,13 +225,8 @@ public class FileValidator {
 					invalidRecords.add(inValid);
 					continue label;
 				}
-				// Line description allowed as blank
+				// Line description not allowed in upload file so we are replacing in file and email will be sent with all line desc
 				if (!allRecords.get(i).getOrDefault(LINE_DESCRIPTION,"").isBlank()) {
-					
-				// inValid = allRecords.get(i);
-				// inValid.put(MESSAGE, "Invalid LineDescription");
-				// invalidRecords.add(inValid);
-				// continue label;
 					Application.LINE_DESC_FILE.computeIfAbsent(fileName, k -> new ArrayList<>()).add("<tr><td>"+allRecords.get(i).getOrDefault(INV_NUM, "")+"</td><td>"+allRecords.get(i).getOrDefault(LINE_DESCRIPTION, "")+"</td></tr>");
 					allRecords.get(i).replace(LINE_DESCRIPTION, "");
 				}

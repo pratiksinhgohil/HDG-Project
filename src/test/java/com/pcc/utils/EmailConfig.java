@@ -22,144 +22,190 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EmailConfig {
 
-	private static String senderPassword = Application.configProps.getProperty("pcc.mail.sender.password");
+  private static String senderPassword =
+      Application.configProps.getProperty("pcc.mail.sender.password");
 
-	private static Session getMailSession() {
-		Properties prop = new Properties(); 
-		prop.put("mail.smtp.host", Application.configProps.getProperty("pcc.mail.host", ""));// "smtp.gmail.com"
-		// prop.put("mail.smtp.socketFactory.class","java.net.ssl.SSLSocketFactory");
-		prop.put("mail.smtp.ssl.enable", Application.configProps.getProperty("pcc.mail.ssl.enable", "true"));// "true"
-		prop.put("mail.smtp.auth", Application.configProps.getProperty("pcc.mail.auth", "true"));
-		// prop.put("mail.smtp.port", "465");
+  private static Session getMailSession() {
+    Properties prop = new Properties();
+    prop.put("mail.smtp.host", Application.configProps.getProperty("pcc.mail.host", ""));// "smtp.gmail.com"
+    // prop.put("mail.smtp.socketFactory.class","java.net.ssl.SSLSocketFactory");
+    prop.put("mail.smtp.ssl.enable",
+        Application.configProps.getProperty("pcc.mail.ssl.enable", "true"));// "true"
+    prop.put("mail.smtp.auth", Application.configProps.getProperty("pcc.mail.auth", "true"));
+    // prop.put("mail.smtp.port", "465");
 
-		return Session.getDefaultInstance(prop, new javax.mail.Authenticator() {
-			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-				return new javax.mail.PasswordAuthentication(Application.EMAIL_SENDER, senderPassword);
-			}
-		});
-	}
+    return Session.getDefaultInstance(prop, new javax.mail.Authenticator() {
+      protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+        return new javax.mail.PasswordAuthentication(Application.EMAIL_SENDER, senderPassword);
+      }
+    });
+  }
 
-	private static MimeMessage getMessage() {
+  private static MimeMessage getMessage(String subject) {
 
-		MimeMessage message = new MimeMessage(getMailSession());
-		try {
-			message.setFrom(Application.EMAIL_SENDER);
-			message.addRecipients(Message.RecipientType.TO, Application.EMAIL_RECEIVER.toArray(new InternetAddress[0]));
-		} catch (MessagingException e) {
-			e.printStackTrace();
-		}
-		return message;
-	}
+    MimeMessage message = new MimeMessage(getMailSession());
+    try {
+      message.setFrom(Application.EMAIL_SENDER);
+      message.addRecipients(Message.RecipientType.TO,
+          Application.EMAIL_RECEIVER.toArray(new InternetAddress[0]));
+      message.setHeader("Content-Type", "text/html");
+      message.setContent(message, "text/html");
+      message.setSubject(subject);
+    } catch (MessagingException e) {
+      e.printStackTrace();
+    }
+    return message;
+  }
 
-	public static void sendInvalidFiles() throws AddressException, MessagingException, IOException {
-		Multipart email = new MimeMultipart();
-		
-		MimeMessage message = getMessage();
-		message.setHeader("Content-Type", "text/html");
-		message.setContent(message, "text/html");
-		message.setSubject("Invalid files of processing hour " + Application.CURRENT_HOUR);
+  public static void sendInvalidFiles() throws AddressException, MessagingException, IOException {
+    Multipart email = new MimeMultipart();
+    MimeBodyPart textBodyPart = new MimeBodyPart();
 
-		MimeBodyPart textBodyPart = new MimeBodyPart();
+    StringBuilder sb = new StringBuilder("Dear User<br><br>");
+    sb.append("<br>Attachment contains files for processing hour " + Application.CURRENT_HOUR);
+    sb.append("<br> Download files and check message of ErrorMessage column </br>");
+    sb.append(
+        "<br><br> Note 1 : Please correct errors and remove column ErrorMessage and upload to FTP again to process in next hour </br>");
+    sb.append("<br> Note 2 : Delete old files");
+    // textBodyPart.setText(sb.toString());
+    textBodyPart.setContent(sb.toString(), "text/html");
+    email.addBodyPart(textBodyPart);
+    try {
+      File folder = new File(Application.CURRENT_HOUR_FOLDER_IN_VALID_FILES);
+      File[] listOfFiles = folder.listFiles();
+      for (File file : listOfFiles) {
+        MimeBodyPart attachment = new MimeBodyPart();
+        attachment.attachFile(file.getCanonicalPath());
+        email.addBodyPart(attachment);
+      }
+    } catch (MessagingException | IOException e) {
+      e.printStackTrace();
+    }
+    MimeMessage message =
+        getMessage("Invalid files of processing hour " + Application.CURRENT_HOUR);
+    message.setContent(email, "text/html");
+    sendEmail(message);
 
-		StringBuilder sb = new StringBuilder("Dear User<br><br>");
-		sb.append("<br>Attachment contains files for processing hour " + Application.CURRENT_HOUR);
-		sb.append(
-				"<br> Download files and check message of ErrorMessage column </br>");
-		sb.append("<br><br> Note 1 : Please correct errors and remove column ErrorMessage and upload to FTP again to process in next hour </br>");
-		sb.append("<br> Note 2 : Delete old files");
-		//textBodyPart.setText(sb.toString());
-		textBodyPart.setContent(sb.toString(), "text/html");
-		email.addBodyPart(textBodyPart);
-		try {
-			File folder = new File(Application.CURRENT_HOUR_FOLDER_IN_VALID_FILES);
-			File[] listOfFiles = folder.listFiles();
-			for (File file : listOfFiles) {
-				MimeBodyPart attachment = new MimeBodyPart();
-				attachment.attachFile(file.getCanonicalPath());
-				email.addBodyPart(attachment);
-			}
-		} catch (MessagingException | IOException e) {
-			e.printStackTrace();
-		}
-		message.setContent(email,"text/html");
-		sendEmail(message);
+  }
 
-	}
+  public static void sendExceptionReport(String pdfFile, String csvFile)
+      throws AddressException, MessagingException, IOException {
+    Multipart email = new MimeMultipart();
 
-	public static void sendExceptionReport(String pdfFile, String csvFile)
-			throws AddressException, MessagingException, IOException {
-		Multipart email = new MimeMultipart();
+    MimeMessage message =
+        getMessage("Exception report of " + csvFile + " of Hour " + Application.CURRENT_HOUR);
+    MimeBodyPart textBodyPart = new MimeBodyPart();
 
-		MimeMessage message = getMessage();
-		message.setSubject("Exception report of "+csvFile +" of Hour " + Application.CURRENT_HOUR);
+    StringBuilder sb = new StringBuilder("Attachment contains exception report of file " + csvFile
+        + " processing during hour " + Application.CURRENT_HOUR + ".");
+    sb.append(
+        "<br> The PDF attachment contains error details and csv contains data which was uploaded.");
+    sb.append("<br> Please correct csv file and upload to FTP again.");
 
-		MimeBodyPart textBodyPart = new MimeBodyPart();
+    textBodyPart.setContent(sb.toString(), "text/html");
+    email.addBodyPart(textBodyPart);
+    try {
+      MimeBodyPart pdfAttachment = new MimeBodyPart();
+      pdfAttachment.attachFile(pdfFile);
+      email.addBodyPart(pdfAttachment);
 
-		StringBuilder sb = new StringBuilder(
-				"Attachment contains exception report of file "+csvFile+" processing during hour " + Application.CURRENT_HOUR+".");
-		sb.append("<br> The PDF attachment contains error details and csv contains data which was uploaded.");
-		sb.append("<br> Please correct csv file and upload to FTP again.");
-	 
-		textBodyPart.setContent(sb.toString(), "text/html");
-		email.addBodyPart(textBodyPart);
-		try {
-			MimeBodyPart pdfAttachment = new MimeBodyPart();
-			pdfAttachment.attachFile(pdfFile);
-			email.addBodyPart(pdfAttachment);
+      MimeBodyPart csvAttachment = new MimeBodyPart();
+      csvAttachment.attachFile(csvFile);
+      email.addBodyPart(csvAttachment);
 
-			MimeBodyPart csvAttachment = new MimeBodyPart();
-			csvAttachment.attachFile(csvFile);
-			email.addBodyPart(csvAttachment);
+    } catch (MessagingException | IOException e) {
+      e.printStackTrace();
+    }
+    message.setContent(email);
+    sendEmail(message);
 
-		} catch (MessagingException | IOException e) {
-			e.printStackTrace();
-		}
-		message.setContent(email);
-		sendEmail(message);
+  }
 
-	}
+  public static void sendEmail(MimeMessage message) throws IOException {
 
-	public static void sendEmail(MimeMessage message) throws IOException {
+    try {
+      Transport.send(message);
+      log.info("Email sending completed");
+    } catch (MessagingException e) {
+      log.info("Error in email sending");
+      throw new RuntimeException(e);
+    }
+  }
 
-		try {
-			Transport.send(message);
-			log.info("Email sending completed");
-		} catch (MessagingException e) {
-			log.info("Error in email sending");
-			throw new RuntimeException(e);
-		}
-	}
+  public static void sendLineDescInEmail()
+      throws AddressException, MessagingException, IOException {
 
-	public static void sendLineDescInEmail() throws AddressException, MessagingException, IOException{
-		
+    Multipart email = new MimeMultipart();
+    MimeMessage message = getMessage(Application.CURRENT_HOUR + "[ Line description details ]");
+    MimeBodyPart textBodyPart = new MimeBodyPart();
 
-		Multipart email = new MimeMultipart();
-		
-		MimeMessage message = getMessage();
-		message.setHeader("Content-Type", "text/html");
-		message.setContent(message, "text/html");
-		message.setSubject(Application.CURRENT_HOUR+"[ Line description details ]");
+    StringBuilder sb = new StringBuilder("Dear User");
+    sb.append(
+        "<br><br>Following records shows line description received in csv files for processing hour:  "
+            + Application.CURRENT_HOUR + ".");
 
-		MimeBodyPart textBodyPart = new MimeBodyPart();
+    Application.LINE_DESC_FILE.entrySet().forEach(entry -> {
+      sb.append("<br><br>File : " + entry.getKey());
+      sb.append("<br><br>" + EMAIL_TABLE_LINE_DESC);
+      entry.getValue().forEach(val -> {
+        sb.append(val);
+      });
+      sb.append("</table>");
 
-		StringBuilder sb = new StringBuilder("Dear User");
-		sb.append("<br><br>Following records shows line description received in csv files for processing hour:  " + Application.CURRENT_HOUR+".");
-		
-		Application.LINE_DESC_FILE.entrySet().forEach(entry ->{
-			sb.append("<br><br>File : " + entry.getKey());
-			sb.append("<br><br><table border='1' style='border-collapse:collapse;border:1px solid;' cellpadding='3'><thead><tr><th>Invoice number</th><th>Line description</th></tr></thead>");
-			entry.getValue().forEach(val ->{				
-				sb.append(val);
-			});
-			sb.append("</table>");
-			
-		});
-		//textBodyPart.setText(sb.toString());
-		textBodyPart.setContent(sb.toString(), "text/html");
-		email.addBodyPart(textBodyPart);
-		message.setContent(email,"text/html");
-		sendEmail(message);
+    });
 
-	}
-	 
+    textBodyPart.setContent(sb.toString(), "text/html");
+    email.addBodyPart(textBodyPart);
+    message.setContent(email, "text/html");
+    sendEmail(message);
+
+  }
+
+  public static void invalidCommunityCodeInFileName(String csvFileName) {
+
+    try {
+      Multipart email = new MimeMultipart();
+
+      MimeMessage message = getMessage(
+          Application.CURRENT_HOUR + ": Invalid communicaty code in file name " + csvFileName);
+
+      MimeBodyPart textBodyPart = new MimeBodyPart();
+
+      StringBuilder sb = new StringBuilder("Dear User");
+      sb.append("<br><br>The file name" + csvFileName + " contains invalid community code");
+      textBodyPart.setContent(sb.toString(), "text/html");
+      email.addBodyPart(textBodyPart);
+      message.setContent(email, "text/html");
+      sendEmail(message);
+
+    } catch (Exception e) {
+      log.info("Error while sending email InvalidCommunityCodeInFileName " + e.getMessage());
+    }
+
+  }
+
+  private static final String EMAIL_TABLE_LINE_DESC =
+      "<table border='1' style='border-collapse:collapse;border:1px solid;' cellpadding='3'><thead><tr><th>Invoice number</th><th>Line description</th></tr></thead>";
+
+  public static void sendProcessiongStatus(String processingStatus) {
+
+    try {
+      Multipart email = new MimeMultipart();
+
+      MimeMessage message = getMessage(Application.CURRENT_HOUR + ": File processing status");
+
+      MimeBodyPart textBodyPart = new MimeBodyPart();
+
+      StringBuilder sb = new StringBuilder("Dear User");
+      sb.append("<br><br>Message :" + processingStatus);
+      textBodyPart.setContent(sb.toString(), "text/html");
+      email.addBodyPart(textBodyPart);
+      message.setContent(email, "text/html");
+      sendEmail(message);
+
+    } catch (Exception e) {
+      log.info("Error while sending email final processing status " + e.getMessage());
+    }
+
+  }
 }

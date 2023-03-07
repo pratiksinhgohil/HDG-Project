@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>TestNG:  Test</title>
+<title>TestNG:  Command line test</title>
 <link href="../testng.css" rel="stylesheet" type="text/css" />
 <link href="../my-testng.css" rel="stylesheet" type="text/css" />
 
@@ -53,13 +53,13 @@ function toggleAllBoxes() {
 
 </head>
 <body>
-<h2 align='center'>Test</h2><table border='1' align="center">
+<h2 align='center'>Command line test</h2><table border='1' align="center">
 <tr>
 <td>Tests passed/Failed/Skipped:</td><td>1/1/0</td>
 </tr><tr>
-<td>Started on:</td><td>Tue Mar 07 10:35:41 UTC 2023</td>
+<td>Started on:</td><td>Tue Mar 07 10:00:10 UTC 2023</td>
 </tr>
-<tr><td>Total time:</td><td>2 seconds (2982 ms)</td>
+<tr><td>Total time:</td><td>3 seconds (3305 ms)</td>
 </tr><tr>
 <td>Included groups:</td><td></td>
 </tr><tr>
@@ -79,8 +79,9 @@ function toggleAllBoxes() {
 <td><div><pre>java.lang.NullPointerException: Cannot invoke &quot;org.openqa.selenium.WebDriver.manage()&quot; because &quot;this.driver&quot; is null
 	at com.pcc.app.Application.DryRun(Application.java:213)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-... Removed 27 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1420810053", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-<div class='stack-trace' id='stack-trace1420810053'><pre>java.lang.NullPointerException: Cannot invoke &quot;org.openqa.selenium.WebDriver.manage()&quot; because &quot;this.driver&quot; is null
+	at com.pcc.app.LoadRunner.main(LoadRunner.java:14)
+... Removed 24 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace987595204", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace987595204'><pre>java.lang.NullPointerException: Cannot invoke &quot;org.openqa.selenium.WebDriver.manage()&quot; because &quot;this.driver&quot; is null
 	at com.pcc.app.Application.DryRun(Application.java:213)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
@@ -107,12 +108,10 @@ function toggleAllBoxes() {
 	at org.testng.TestNG.runSuitesLocally(TestNG.java:1134)
 	at org.testng.TestNG.runSuites(TestNG.java:1063)
 	at org.testng.TestNG.run(TestNG.java:1031)
-	at org.testng.remote.AbstractRemoteTestNG.run(AbstractRemoteTestNG.java:115)
-	at org.testng.remote.RemoteTestNG.initAndRun(RemoteTestNG.java:251)
-	at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:77)
+	at com.pcc.app.LoadRunner.main(LoadRunner.java:14)
 </pre></div></td>
 <td>0</td>
-<td>com.pcc.app.Application@4196c360</td></tr>
+<td>com.pcc.app.Application@6f10d5b6</td></tr>
 </table><p>
 <table width='100%' border='1' class='invocation-passed'>
 <tr><td colspan='4' align='center'><b>PASSED TESTS</b></td></tr>
@@ -124,8 +123,8 @@ function toggleAllBoxes() {
 <tr>
 <td title='com.pcc.app.Application.Import_File()'><b>Import_File</b><br>Test class: com.pcc.app.Application</td>
 <td></td>
-<td>2</td>
-<td>com.pcc.app.Application@4196c360</td></tr>
+<td>1</td>
+<td>com.pcc.app.Application@6f10d5b6</td></tr>
 </table><p>
 </body>
 </html>

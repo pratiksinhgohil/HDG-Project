@@ -51,7 +51,7 @@
               <ul>
                 <li>
                   <a href="#" panel-name="test-xml-Default_suite" class="navigator-link ">
-                    <span>C:\Users\Administrator\AppData\Local\Temp\2\testng-eclipse-1476673388\testng-customsuite.xml</span>
+                    <span>C:\Users\Administrator\AppData\Local\Temp\2\testng-eclipse--137999416\testng-customsuite.xml</span>
                   </a> <!-- navigator-link  -->
                 </li>
                 <li>
@@ -130,13 +130,36 @@
                   <a name="Import_File">
                   </a> <!-- Import_File -->
                   <span class="method-name">Import_File</span>
-                  <div class="stack-trace">java.lang.RuntimeException: javax.mail.MessagingException: IOException while sending message;
-  nested exception is:
-	java.io.FileNotFoundException: C:\PCC\errorfiles\2023\MARCH\1\6\HDG_invout_HDG-120_20230109_054907869.pdf (The system cannot find the file specified)
-	at com.pcc.utils.EmailConfig.sendEmail(EmailConfig.java:137)
-	at com.pcc.utils.EmailConfig.sendExceptionReport(EmailConfig.java:126)
-	at com.pcc.utils.ImportFile.exception(ImportFile.java:374)
-	at com.pcc.app.Application.Import_File(Application.java:183)
+                  <div class="stack-trace">org.openqa.selenium.NoSuchWindowException: no such window: target window already closed
+from unknown error: web view not found
+  (Session info: chrome=110.0.5481.178)
+Build info: version: &apos;4.7.2&apos;, revision: &apos;4d4020c3b7&apos;
+System info: os.name: &apos;Windows Server 2022&apos;, os.arch: &apos;amd64&apos;, os.version: &apos;10.0&apos;, java.version: &apos;17.0.5&apos;
+Driver info: org.openqa.selenium.chrome.ChromeDriver
+Command: [580f710a3d83f455d89ea0fc12f21d8c, findElement {using=xpath, value=//*[@id=&quot;un&quot;]}]
+Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 110.0.5481.178, chrome: {chromedriverVersion: 110.0.5481.77 (65ed616c6e8e..., userDataDir: C:\Program Files (x86)\scop...}, goog:chromeOptions: {debuggerAddress: localhost:58459}, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: WINDOWS, proxy: Proxy(), se:cdp: ws://localhost:58459/devtoo..., se:cdpVersion: 110.0.5481.178, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:virtualAuthenticators: true}
+Session ID: 580f710a3d83f455d89ea0fc12f21d8c
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:480)
+	at org.openqa.selenium.remote.codec.w3c.W3CHttpResponseCodec.createException(W3CHttpResponseCodec.java:200)
+	at org.openqa.selenium.remote.codec.w3c.W3CHttpResponseCodec.decode(W3CHttpResponseCodec.java:133)
+	at org.openqa.selenium.remote.codec.w3c.W3CHttpResponseCodec.decode(W3CHttpResponseCodec.java:53)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:184)
+	at org.openqa.selenium.remote.service.DriverCommandExecutor.invokeExecute(DriverCommandExecutor.java:167)
+	at org.openqa.selenium.remote.service.DriverCommandExecutor.execute(DriverCommandExecutor.java:142)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:535)
+	at org.openqa.selenium.remote.ElementLocation$ElementFinder$2.findElement(ElementLocation.java:162)
+	at org.openqa.selenium.remote.ElementLocation.findElement(ElementLocation.java:60)
+	at org.openqa.selenium.remote.RemoteWebDriver.findElement(RemoteWebDriver.java:351)
+	at org.openqa.selenium.remote.RemoteWebDriver.findElement(RemoteWebDriver.java:343)
+	at org.openqa.selenium.support.pagefactory.DefaultElementLocator.findElement(DefaultElementLocator.java:70)
+	at org.openqa.selenium.support.pagefactory.internal.LocatingElementHandler.invoke(LocatingElementHandler.java:39)
+	at jdk.proxy2/jdk.proxy2.$Proxy16.sendKeys(Unknown Source)
+	at com.pcc.utils.ImportFile.username(ImportFile.java:35)
+	at com.pcc.app.Application.Import_File(Application.java:156)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
@@ -165,30 +188,6 @@
 	at org.testng.remote.AbstractRemoteTestNG.run(AbstractRemoteTestNG.java:115)
 	at org.testng.remote.RemoteTestNG.initAndRun(RemoteTestNG.java:251)
 	at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:77)
-Caused by: javax.mail.MessagingException: IOException while sending message;
-  nested exception is:
-	java.io.FileNotFoundException: C:\PCC\errorfiles\2023\MARCH\1\6\HDG_invout_HDG-120_20230109_054907869.pdf (The system cannot find the file specified)
-	at com.sun.mail.smtp.SMTPTransport.sendMessage(SMTPTransport.java:1350)
-	at javax.mail.Transport.send0(Transport.java:255)
-	at javax.mail.Transport.send(Transport.java:124)
-	at com.pcc.utils.EmailConfig.sendEmail(EmailConfig.java:133)
-	... 31 more
-Caused by: java.io.FileNotFoundException: C:\PCC\errorfiles\2023\MARCH\1\6\HDG_invout_HDG-120_20230109_054907869.pdf (The system cannot find the file specified)
-	at java.base/java.io.FileInputStream.open0(Native Method)
-	at java.base/java.io.FileInputStream.open(FileInputStream.java:216)
-	at java.base/java.io.FileInputStream.&lt;init&gt;(FileInputStream.java:157)
-	at javax.activation.FileDataSource.getInputStream(FileDataSource.java:80)
-	at javax.activation.DataHandler.writeTo(DataHandler.java:288)
-	at javax.mail.internet.MimeBodyPart.writeTo(MimeBodyPart.java:1694)
-	at javax.mail.internet.MimeBodyPart.writeTo(MimeBodyPart.java:996)
-	at javax.mail.internet.MimeMultipart.writeTo(MimeMultipart.java:561)
-	at com.sun.mail.handlers.multipart_mixed.writeTo(multipart_mixed.java:84)
-	at javax.activation.ObjectDataContentHandler.writeTo(DataHandler.java:871)
-	at javax.activation.DataHandler.writeTo(DataHandler.java:300)
-	at javax.mail.internet.MimeBodyPart.writeTo(MimeBodyPart.java:1694)
-	at javax.mail.internet.MimeMessage.writeTo(MimeMessage.java:1913)
-	at com.sun.mail.smtp.SMTPTransport.sendMessage(SMTPTransport.java:1300)
-	... 34 more
 
 </div> <!-- stack-trace -->
                 </div> <!-- method-content -->
@@ -198,7 +197,7 @@ Caused by: java.io.FileNotFoundException: C:\PCC\errorfiles\2023\MARCH\1\6\HDG_i
         </div> <!-- panel Default_suite -->
         <div panel-name="test-xml-Default_suite" class="panel">
           <div class="main-panel-header rounded-window-top">
-            <span class="header-content">C:\Users\Administrator\AppData\Local\Temp\2\testng-eclipse-1476673388\testng-customsuite.xml</span>
+            <span class="header-content">C:\Users\Administrator\AppData\Local\Temp\2\testng-eclipse--137999416\testng-customsuite.xml</span>
           </div> <!-- main-panel-header rounded-window-top -->
           <div class="main-panel-content rounded-window-bottom">
             <pre>
@@ -255,12 +254,12 @@ data.addRows(1);
 data.setCell(0, 0, 0)
 data.setCell(0, 1, 'Import_File')
 data.setCell(0, 2, 'com.pcc.app.Application')
-data.setCell(0, 3, 51462);
+data.setCell(0, 3, 67);
 window.suiteTableData['Default_suite']= { tableData: data, tableDiv: 'times-div-Default_suite'}
 return data;
 }
               </script>
-              <span class="suite-total-time">Total running time: 51 seconds</span>
+              <span class="suite-total-time">Total running time: 67 ms</span>
               <div id="times-div-Default_suite">
               </div> <!-- times-div-Default_suite -->
             </div> <!-- times-div -->
@@ -302,11 +301,11 @@ return data;
                 <img src="failed.png">
                 </img>
                 <span class="method-name">Import_File</span>
-                <span class="method-start">11372 ms</span>
+                <span class="method-start">7056 ms</span>
               </div> <!-- test-method -->
               <div class="configuration-class after">
                 <span class="method-name">closeBrowser</span>
-                <span class="method-start">62844 ms</span>
+                <span class="method-start">7138 ms</span>
               </div> <!-- configuration-class after -->
           </div> <!-- main-panel-content rounded-window-bottom -->
         </div> <!-- panel -->

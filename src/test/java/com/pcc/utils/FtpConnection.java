@@ -84,40 +84,21 @@ public class FtpConnection {
 					boolean success = ftpClient.completePendingCommand();
 
 					if (success) {
-						log.info(Application.CURRENT_HOUR_FOLDER + "//" + remoteFile
-								+ " has been downloaded successfully.");
+						log.info(" {}// {} has been downloaded successfully.",Application.CURRENT_HOUR_FOLDER,remoteFile);
 					}
 
 					writingStream.close();
 					readingStream.close();
 
-					boolean deleteFile = true;// ftpClient.deleteFile(remoteFileToDelete);
+					boolean deleteFile = true; 
+//					boolean deleteFile = ftpClient.deleteFile(remoteFileToDelete);
 					log.info("Remote file {} delete status {}",remoteFileToDelete,deleteFile);
 
 					fileCounter++;
 				}
 			}
 
-			return fileCounter;
-			/*
-			 * LocalDateTime timestamp = LocalDateTime.now();
-			 * 
-			 * DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd-MM-yyy HH-mm-ss");
-			 * String fg = timestamp.format(DTF);
-			 * 
-			 * String remoteFile2 = "/In/Test/HDG_invout_HDG-2_20201130_TEST3.csv"; File
-			 * downloadFile2 = new File("C:/FTP File/HDG_invout_HDG-2_20201130_TEST3." + fg
-			 * + ".csv"); OutputStream outputStream2 = new BufferedOutputStream(new
-			 * FileOutputStream(downloadFile2)); InputStream inputStream =
-			 * ftpClient.retrieveFileStream(remoteFile2); byte[] bytesArray = new
-			 * byte[4096]; int bytesRead = -1; while ((bytesRead =
-			 * inputStream.read(bytesArray)) != -1) { outputStream2.write(bytesArray, 0,
-			 * bytesRead); }
-			 * 
-			 * boolean success = ftpClient.completePendingCommand(); if (success) {
-			 * log.info("File #1 has been downloaded successfully."); }
-			 * outputStream2.close(); inputStream.close();
-			 */
+			return fileCounter; 
 
 		} catch (IOException ex) {
 			log.info("Error in FTP connection : " + ex.getMessage());
