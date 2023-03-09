@@ -57,7 +57,7 @@ public class ImportFile extends ImportFileOr {
   }
 
 
-  public void uploadfile(String filePath) throws InterruptedException {
+  public void uploadfile(String filePath, String fileName) throws InterruptedException {
 
     driver.navigate().to("https://www25.pointclickcare.com/glap/ap/processing/invoiceimport.xhtml");
     Thread.sleep(2000);
@@ -120,18 +120,19 @@ public class ImportFile extends ImportFileOr {
     Thread.sleep(6000);
   }
 
-  public void exception(String csvFileName, String errorFilePath) throws Exception, AWTException {
+  public void popUpHandler(String csvFileNameWithPath, String pdfName, String fileName) throws Exception, AWTException {
 
-    log.info("Uploaded file path" + csvFileName + " Error report PDF " + errorFilePath
+    log.info("Uploaded file path" + csvFileNameWithPath + " Error report PDF " + pdfName
         + " exc_repo.getAccessibleName() >>> " + exc_repo.getAccessibleName());
     if (exc_repo.getAccessibleName().equalsIgnoreCase("Exceptions Report")) {
-
+      Application.UPLOAD_PROCESSING_STATUS.put(fileName, "Exception report generated");
       exc_repo.click();
       Thread.sleep(10000);
 
       Toolkit toolkit = Toolkit.getDefaultToolkit();
       Clipboard clipboard = toolkit.getSystemClipboard();
-      StringSelection strSel = new StringSelection(errorFilePath);
+      StringSelection strSel = new StringSelection(pdfName);
+      Application.EXCEPTION_REPORTS.add(pdfName);
       clipboard.setContents(strSel, null);
 
       Robot rb = new Robot();
@@ -171,22 +172,23 @@ public class ImportFile extends ImportFileOr {
       rb.keyRelease(KeyEvent.VK_TAB);
 
       // Send email
-      EmailConfig.sendExceptionReport(errorFilePath, csvFileName);
+      //EmailConfig.sendExceptionReport(pdfName, csvFileNameWithPath,fileName);
       Thread.sleep(5000);
-
+      
       //
     } else if (exc_repo.getAccessibleName().equalsIgnoreCase("Commit")) {
       Thread.sleep(5000);
-      commit();
+      commit(csvFileNameWithPath,fileName);
       Thread.sleep(5000);
 
     } else {
       log.info("Unknown button " + exc_repo.getAccessibleName());
+      Application.UPLOAD_PROCESSING_STATUS.put(csvFileNameWithPath, "Unknown button in UI :  " + exc_repo.getAccessibleName());
     }
 
   }
 
-  public void commit() throws Exception {
+  public void commit(String csvFileNameWithPath, String csvFileName) throws Exception {
 
     commit.click();
     Thread.sleep(5000);
@@ -195,16 +197,28 @@ public class ImportFile extends ImportFileOr {
       Thread.sleep(2000);
       Alert alert = driver.switchTo().alert();
       String alertText = alert.getText();
-      //log.info("ERROR: (ALERT BOX DETECTED) - ALERT MSG : " + alertText);
+      log.info("ALERT_BOX_DETECTED) - ALERT MSG : " + alertText);
+      if(alertText != null && alertText.toLowerCase().contains("duplicate invoice found")) {
+        log.info(csvFileName+ " : Status : Duplicate invoice message : "+ alertText);
+        //EmailConfig.sendDuplicateInvoiceEmail(csvFileNameWithPath,csvFileName,alertText);
+        Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status : Duplicate invoice message : "+ alertText);
+      }else if(alertText != null && alertText.toLowerCase().contains("commit complete")) {
+        log.info(csvFileName+ " : Status : Commit Complete message : "+ alertText);
+        Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status : Commit Complete message : "+ alertText);
+      }else {
+        log.info(csvFileName+ "  Unknown error: "+alertText);
+        Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status : "+ alertText);
+      }
+      
       alert.accept();
       Thread.sleep(2000);
       close.click();
       Thread.sleep(5000);
 
     } catch (Exception e) {
-
+      log.info("Catch block" + e.getMessage());
+      Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status(Exception) : "+ e.getMessage());
     }
-    // driver.close();
   }
 
 }

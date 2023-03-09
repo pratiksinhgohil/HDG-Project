@@ -88,15 +88,15 @@ public class EmailConfig {
 
   }
 
-  public static void sendExceptionReport(String pdfFile, String csvFile)
+  public static void sendExceptionReport(String pdfFile, String csvFile, String fileName)
       throws AddressException, MessagingException, IOException {
     Multipart email = new MimeMultipart();
 
     MimeMessage message =
-        getMessage("Exception report of " + csvFile + " of Hour " + Application.CURRENT_HOUR);
+        getMessage("Exception report of " + fileName + " of Hour " + Application.CURRENT_HOUR);
     MimeBodyPart textBodyPart = new MimeBodyPart();
 
-    StringBuilder sb = new StringBuilder("Attachment contains exception report of file " + csvFile
+    StringBuilder sb = new StringBuilder("Attachment contains exception report of file " + fileName
         + " processing during hour " + Application.CURRENT_HOUR + ".");
     sb.append(
         "<br> The PDF attachment contains error details and csv contains data which was uploaded.");
@@ -185,8 +185,12 @@ public class EmailConfig {
   }
 
   private static final String EMAIL_TABLE_LINE_DESC =
-      "<table border='1' style='border-collapse:collapse;border:1px solid;' cellpadding='3'><thead><tr><th>Invoice number</th><th>Line description</th></tr></thead>";
+      "<table border='1' style='border-collapse:collapse;border:1px solid;' cellpadding='3'><thead><tr><th>VenCode</th><th>Invoice number</th><th>Line description</th></tr></thead>";
+  
+  private static final String EMAIL_TABLE_PROCESSING_STATUS =
+      "<table border='1' style='border-collapse:collapse;border:1px solid;' cellpadding='3'><thead><tr><th>File name</th><th>Processing status</th></tr></thead>";
 
+  
   public static void sendProcessiongStatus(String processingStatus) {
 
     try {
@@ -197,9 +201,54 @@ public class EmailConfig {
       MimeBodyPart textBodyPart = new MimeBodyPart();
 
       StringBuilder sb = new StringBuilder("Dear User");
-      sb.append("<br><br>Message :" + processingStatus);
+      sb.append("<br><br>Processing status message  :" + processingStatus);
+      
+      sb.append("<br><br>Details of each file is as below  :<br><br>");
+      if(!Application.UPLOAD_PROCESSING_STATUS.isEmpty()) {
+        sb.append(EMAIL_TABLE_PROCESSING_STATUS);
+        Application.UPLOAD_PROCESSING_STATUS.entrySet().forEach(entry -> {
+          sb.append("<tr><td>" + entry.getKey()+"</td><td>"+entry.getValue()+"</td></tr>");
+        });
+        sb.append("</table>");
+      }
+      sb.append("<br><br>If email contains pdf file in attachment then read each pdf file and correct csv file from attachment. After correction please upload csv file to FTP again.");
       textBodyPart.setContent(sb.toString(), "text/html");
       email.addBodyPart(textBodyPart);
+      
+      File folder = new File(Application.CURRENT_HOUR_FOLDER);
+      File[] listOfFiles = folder.listFiles();
+      log.info("Attach ");
+      for (File file : listOfFiles) {
+        String fileName = file.getName();
+        try {
+          if (file.isFile()) {
+            try {
+              MimeBodyPart csvFile = new MimeBodyPart();
+              csvFile.attachFile(file.getCanonicalPath());
+              email.addBodyPart(csvFile);
+            } catch (MessagingException | IOException e) {
+              e.printStackTrace();
+            }
+
+          } else if (file.isDirectory()) {
+            log.info(fileName + " is not file");
+          }
+        } catch (Exception e) {
+          log.info("Error while reading file " + fileName);
+        }
+      }
+      
+      if(!Application.EXCEPTION_REPORTS.isEmpty()) {
+        Application.EXCEPTION_REPORTS.forEach(pdfPath -> {
+          try {
+            MimeBodyPart csvFile = new MimeBodyPart();
+            csvFile.attachFile(pdfPath);
+            email.addBodyPart(csvFile);
+          } catch (MessagingException | IOException e) {
+            e.printStackTrace();
+          }  
+        });
+      }
       message.setContent(email, "text/html");
       sendEmail(message);
 
@@ -207,5 +256,39 @@ public class EmailConfig {
       log.info("Error while sending email final processing status " + e.getMessage());
     }
 
+  }
+
+  public static void sendDuplicateInvoiceEmail(String csvFileNameWithPath,String csvFileName, String errorInPopup) {
+
+
+    try {
+      Multipart email = new MimeMultipart();
+
+      MimeMessage message = getMessage(
+          Application.CURRENT_HOUR + ": Duplicate Invoice Error " + csvFileName);
+
+      MimeBodyPart textBodyPart = new MimeBodyPart();
+
+      StringBuilder sb = new StringBuilder("Dear User");
+      sb.append("<br><br>The file name" + csvFileName + " had duplicate invoice error popup, Error message is as below");
+      sb.append("<br><br>Error :"+errorInPopup);
+      textBodyPart.setContent(sb.toString(), "text/html");
+      email.addBodyPart(textBodyPart);
+      try {
+        MimeBodyPart pdfAttachment = new MimeBodyPart();
+        pdfAttachment.attachFile(csvFileNameWithPath);
+        email.addBodyPart(pdfAttachment);
+      } catch (MessagingException | IOException e) {
+        e.printStackTrace();
+      }
+      message.setContent(email, "text/html");
+      sendEmail(message);
+
+    } catch (Exception e) {
+      log.info("Error while sending email sendDuplicateInvoiceEmail " + e.getMessage());
+    }
+
+  
+    
   }
 }

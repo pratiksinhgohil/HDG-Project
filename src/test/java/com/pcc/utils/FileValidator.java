@@ -127,9 +127,9 @@ public class FileValidator {
 			LinkedHashMap<String, String> valid = new LinkedHashMap<>();
 			LinkedHashMap<String, String> inValid = new LinkedHashMap<>();
 			for (int j = 0; j < allRecords.get(i).size(); j++) {
-
-				// VenCode must not empty
-				if (allRecords.get(i).getOrDefault(VEN_CODE, "").isEmpty()) {
+			    
+				String vencode = allRecords.get(i).getOrDefault(VEN_CODE, "");
+                if (vencode.isEmpty()) {
 					inValid = allRecords.get(i);
 					inValid.put(MESSAGE, "Invalid VenCode");
 					invalidRecords.add(inValid);
@@ -137,8 +137,9 @@ public class FileValidator {
 				}
 
 				// Invoice number must not blank and should not have more than 17 chars
-				if (allRecords.get(i).getOrDefault(INV_NUM, "").isBlank()
-						|| allRecords.get(i).getOrDefault(INV_NUM, "").length() > 17) {
+				String invNum = allRecords.get(i).getOrDefault(INV_NUM, "");
+                if (invNum.isBlank()
+						|| invNum.length() > 17) {
 					inValid = allRecords.get(i);
 					inValid.put(MESSAGE, "Invalid InvNum");
 					invalidRecords.add(inValid);
@@ -226,8 +227,9 @@ public class FileValidator {
 					continue label;
 				}
 				// Line description not allowed in upload file so we are replacing in file and email will be sent with all line desc
-				if (!allRecords.get(i).getOrDefault(LINE_DESCRIPTION,"").isBlank()) {
-					Application.LINE_DESC_FILE.computeIfAbsent(fileName, k -> new ArrayList<>()).add("<tr><td>"+allRecords.get(i).getOrDefault(INV_NUM, "")+"</td><td>"+allRecords.get(i).getOrDefault(LINE_DESCRIPTION, "")+"</td></tr>");
+				String lineDescription = allRecords.get(i).getOrDefault(LINE_DESCRIPTION,"");
+                if (!lineDescription.isBlank()) {
+					Application.LINE_DESC_FILE.computeIfAbsent(fileName, k -> new ArrayList<>()).add("<tr><td>"+vencode+"</td><td>"+invNum+"</td><td>"+lineDescription+"</td></tr>");
 					allRecords.get(i).replace(LINE_DESCRIPTION, "");
 				}
 				valid = allRecords.get(i);

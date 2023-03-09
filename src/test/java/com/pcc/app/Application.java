@@ -8,9 +8,12 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -52,7 +55,8 @@ public class Application {
   ChromeOptions option = new ChromeOptions();
 
   public static ConcurrentHashMap<String, List<String>> LINE_DESC_FILE = new ConcurrentHashMap<>();
-
+  public static ConcurrentHashMap<String,String> UPLOAD_PROCESSING_STATUS = new ConcurrentHashMap<>();
+  public static Set<String> EXCEPTION_REPORTS = new HashSet<>();
   public static Properties HDG_PCC_CODE_MAP = new Properties();
 
   @BeforeClass
@@ -163,24 +167,25 @@ public class Application {
       File[] listOfFiles = folder.listFiles();
       log.info("Got list of files");
       for (File file : listOfFiles) {
+        String fileName = file.getName();
         try {
           if (file.isFile()) {
-            log.info("Uploading file " + file.getCanonicalPath());
+            String fileNameWithPath = file.getCanonicalPath();
+            String pdfName = (Application.ERROR_REPORT_PATH + "//" + fileName).replace("//", "\\").replace(".csv", "")+"_"+System.currentTimeMillis()+".pdf";
+            log.info("Uploading file " + fileNameWithPath);
 
             //imf.browse();
-            if (imf.checkfile(file.getName())) {
-              imf.uploadfile(file.getCanonicalPath());
+            if (imf.checkfile(fileName)) {
+              imf.uploadfile(fileNameWithPath,fileName);
               imf.loadfile();
-              imf.exception(file.getCanonicalPath(),
-                  (Application.ERROR_REPORT_PATH + "//" + file.getName()).replace("//", "\\")
-                      .replace(".csv", ".pdf"));
+              imf.popUpHandler(fileNameWithPath,pdfName,fileName);
             }
 
           } else if (file.isDirectory()) {
-            log.info(file.getName() + " is not file");
+            log.info(fileName + " is not file");
           }
         } catch (Exception e) {
-          log.info("Error while reading file " + file.getName());
+          log.info("Error while reading file " + fileName);
         }
       }
       processingStatus = "File processing finished for hour " + CURRENT_HOUR;
@@ -219,11 +224,11 @@ public class Application {
     imf.password();
     imf.submit();
     String filePath = "C:\\PCC\\2023\\JANUARY\\20\\6\\HDG_invout_HDG-2_20201130_TEST3.csv";
-    imf.uploadfile(filePath);
+    imf.uploadfile(filePath,"HDG_invout_HDG-2_20201130_TEST3.csv");
     imf.loadfile();
-    imf.exception(filePath,
-        (Application.ERROR_REPORT_PATH + "//" + "HDG_invout_HDG-2_20201130_TEST3.csv")
-            .replace("//", "\\").replace(".csv", ".pdf"));
+    String pdfFileName = (Application.ERROR_REPORT_PATH + "//" + "HDG_invout_HDG-2_20201130_TEST3.csv")
+        .replace("//", "\\").replace(".csv", ".pdf");
+    imf.popUpHandler(filePath,pdfFileName,"HDG_invout_HDG-2_20201130_TEST3.csv");
 
   }
 
