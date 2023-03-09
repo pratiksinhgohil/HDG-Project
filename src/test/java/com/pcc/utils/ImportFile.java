@@ -201,10 +201,10 @@ public class ImportFile extends ImportFileOr {
       if(alertText != null && alertText.toLowerCase().contains("duplicate invoice found")) {
         log.info(csvFileName+ " : Status : Duplicate invoice message : "+ alertText);
         //EmailConfig.sendDuplicateInvoiceEmail(csvFileNameWithPath,csvFileName,alertText);
-        Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status : Duplicate invoice message : "+ alertText);
+        Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status : "+ alertText);
       }else if(alertText != null && alertText.toLowerCase().contains("commit complete")) {
         log.info(csvFileName+ " : Status : Commit Complete message : "+ alertText);
-        Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status : Commit Complete message : "+ alertText);
+        Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status :"+ alertText);
       }else {
         log.info(csvFileName+ "  Unknown error: "+alertText);
         Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status : "+ alertText);
@@ -217,7 +217,7 @@ public class ImportFile extends ImportFileOr {
 
     } catch (Exception e) {
       log.info("Catch block" + e.getMessage());
-      Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status(Exception) : "+ e.getMessage());
+      Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status(Exception) : Please verify file in PCC as commit message didn't observed");
     }
   }
 

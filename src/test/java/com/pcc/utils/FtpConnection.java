@@ -39,6 +39,7 @@ public class FtpConnection {
 		} catch (IOException ex) {
 			log.info("Error in FTP connection : " + ex.getMessage());
 			ex.printStackTrace();
+			
 			return false;
 		}
 

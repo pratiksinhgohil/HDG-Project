@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -212,7 +211,7 @@ public class Application {
    * 
    * }
    */
-  @Test
+  //@Test
   public void DryRun() throws Exception {
 
     driver.manage().window().maximize();
@@ -249,6 +248,7 @@ public class Application {
     } catch (IOException ex) {
       log.info("Error while reading file " + path);
       ex.printStackTrace();
+      System.exit(0);
       return null;
     }
   }
@@ -268,8 +268,9 @@ public class Application {
       }
       HDG_PCC_CODE_MAP.putAll(prop);
     } catch (IOException ex) {
-      log.info("Error while reading file " + path);
+      log.info("Error while reading file :  " + path);
       ex.printStackTrace();
+      System.exit(0);
     }
   }
 
