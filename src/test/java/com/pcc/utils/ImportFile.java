@@ -17,6 +17,9 @@ import org.openqa.selenium.support.PageFactory;
 import com.pcc.app.Application;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The Class ImportFile.
+ */
 @Slf4j
 public class ImportFile extends ImportFileOr {
   WebDriver driver;
@@ -24,13 +27,22 @@ public class ImportFile extends ImportFileOr {
   private static final String ELEMENT = "//*[@id=\"pccFacLink\"]";
 
 
+  /**
+   * Instantiates a new import file.
+   *
+   * @param driver the driver
+   */
   public ImportFile(WebDriver driver) {
     this.driver = driver;
     PageFactory.initElements(driver, this);
-
-    // driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+   // driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
   }
 
+  /**
+   * Username.
+   *
+   * @throws InterruptedException the interrupted exception
+   */
   public void username() throws InterruptedException {
     uname.sendKeys(Application.configProps.getProperty("pcc.website.username"));
     Thread.sleep(2000);
@@ -38,17 +50,32 @@ public class ImportFile extends ImportFileOr {
     Thread.sleep(2000);
   }
 
+  /**
+   * Password.
+   *
+   * @throws InterruptedException the interrupted exception
+   */
   public void password() throws InterruptedException {
     pwd.sendKeys(Application.configProps.getProperty("pcc.website.password"));
     Thread.sleep(2000);
   }
 
+  /**
+   * Submit.
+   *
+   * @throws InterruptedException the interrupted exception
+   */
   public void submit() throws InterruptedException {
     submit.click();
     Thread.sleep(7000);
 
   }
 
+  /**
+   * Hovermenu.
+   *
+   * @throws InterruptedException the interrupted exception
+   */
   public void hovermenu() throws InterruptedException {
     Actions ac = new Actions(driver);
     ac.moveToElement(hover).perform();
@@ -57,23 +84,39 @@ public class ImportFile extends ImportFileOr {
   }
 
 
+  /**
+   * Uploadfile.
+   *
+   * @param filePath the file path
+   * @param fileName the file name
+   * @throws InterruptedException the interrupted exception
+   */
   public void uploadfile(String filePath, String fileName) throws InterruptedException {
-
     driver.navigate().to("https://www25.pointclickcare.com/glap/ap/processing/invoiceimport.xhtml");
     Thread.sleep(2000);
-
-    uploadfile.sendKeys(filePath);// "C://FTP File//HDG_invout_HDG-2_20201130_TEST3_29-12-2022
-                                  // 13-36-24.csv"
+    uploadfile.sendKeys(filePath);// "C://FTP File//HDG_invout_HDG-2_20201130_TEST3_29-12-2022 13-36-24.csv"
     Thread.sleep(2000);
-
   }
 
+  /**
+   * Split path.
+   *
+   * @param pathString the path string
+   * @return the string[]
+   */
   public static String[] splitPath(String pathString) {
     Path path = Paths.get(pathString);
     return StreamSupport.stream(path.spliterator(), false).map(Path::toString)
         .toArray(String[]::new);
   }
 
+  /**
+   * Checkfile.
+   *
+   * @param csvFileName the csv file name
+   * @return true, if successful
+   * @throws InterruptedException the interrupted exception
+   */
   public boolean checkfile(String csvFileName) throws InterruptedException {
  
     log.info("Checking community code in UI for file {}",csvFileName);
@@ -101,25 +144,39 @@ public class ImportFile extends ImportFileOr {
             driver.findElement(By.xpath(xpathExpression)).click();
             Thread.sleep(6000);
             return true;
+          }else {
+            Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Community code not found in configuration");
           } 
         } 
       } 
     } catch (Exception e) {
       log.info("The file {} contains invalid commmunity code in name", csvFileName);
-      EmailConfig.invalidCommunityCodeInFileName(csvFileName);
-
+      Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Error while setting community code, check hdg-pcc-code-mapping.properties and pcc web-site");
+      //EmailConfig.invalidCommunityCodeInFileName(csvFileName);
     }
     return false;
  
-  }
+  } 
 
- 
-
+  /**
+   * Loadfile.
+   *
+   * @throws InterruptedException the interrupted exception
+   */
   public void loadfile() throws InterruptedException {
     loadbtn.click();
     Thread.sleep(6000);
   }
 
+  /**
+   * Pop up handler.
+   *
+   * @param csvFileNameWithPath the csv file name with path
+   * @param pdfName the pdf name
+   * @param fileName the file name
+   * @throws Exception the exception
+   * @throws AWTException the AWT exception
+   */
   public void popUpHandler(String csvFileNameWithPath, String pdfName, String fileName) throws Exception, AWTException {
 
     log.info("Uploaded file path" + csvFileNameWithPath + " Error report PDF " + pdfName
@@ -188,6 +245,13 @@ public class ImportFile extends ImportFileOr {
 
   }
 
+  /**
+   * Commit.
+   *
+   * @param csvFileNameWithPath the csv file name with path
+   * @param csvFileName the csv file name
+   * @throws Exception the exception
+   */
   public void commit(String csvFileNameWithPath, String csvFileName) throws Exception {
 
     commit.click();

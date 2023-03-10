@@ -22,9 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EmailConfig {
 
-  private static String senderPassword =
-      Application.configProps.getProperty("pcc.mail.sender.password");
-
+  /**
+   * Gets the mail session.
+   *
+   * @return the mail session
+   */
   private static Session getMailSession() {
     Properties prop = new Properties();
     prop.put("mail.smtp.host", Application.configProps.getProperty("pcc.mail.host", ""));// "smtp.gmail.com"
@@ -36,27 +38,20 @@ public class EmailConfig {
 
     return Session.getDefaultInstance(prop, new javax.mail.Authenticator() {
       protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-        return new javax.mail.PasswordAuthentication(Application.EMAIL_SENDER, senderPassword);
+        return new javax.mail.PasswordAuthentication(Application.EMAIL_SENDER, Application.configProps.getProperty("pcc.mail.sender.password"));
       }
     });
   }
 
-  private static MimeMessage getMessage(String subject) {
 
-    MimeMessage message = new MimeMessage(getMailSession());
-    try {
-      message.setFrom(Application.EMAIL_SENDER);
-      message.addRecipients(Message.RecipientType.TO,
-          Application.EMAIL_RECEIVER.toArray(new InternetAddress[0]));
-      message.setHeader("Content-Type", "text/html");
-      message.setContent(message, "text/html");
-      message.setSubject(subject);
-    } catch (MessagingException e) {
-      e.printStackTrace();
-    }
-    return message;
-  }
 
+  /**
+   * Send invalid files generated after validation
+   *
+   * @throws AddressException the address exception
+   * @throws MessagingException the messaging exception
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public static void sendInvalidFiles() throws AddressException, MessagingException, IOException {
     Multipart email = new MimeMultipart();
     MimeBodyPart textBodyPart = new MimeBodyPart();
@@ -88,50 +83,15 @@ public class EmailConfig {
 
   }
 
-  public static void sendExceptionReport(String pdfFile, String csvFile, String fileName)
-      throws AddressException, MessagingException, IOException {
-    Multipart email = new MimeMultipart();
 
-    MimeMessage message =
-        getMessage("Exception report of " + fileName + " of Hour " + Application.CURRENT_HOUR);
-    MimeBodyPart textBodyPart = new MimeBodyPart();
 
-    StringBuilder sb = new StringBuilder("Attachment contains exception report of file " + fileName
-        + " processing during hour " + Application.CURRENT_HOUR + ".");
-    sb.append(
-        "<br> The PDF attachment contains error details and csv contains data which was uploaded.");
-    sb.append("<br> Please correct csv file and upload to FTP again.");
-
-    textBodyPart.setContent(sb.toString(), "text/html");
-    email.addBodyPart(textBodyPart);
-    try {
-      MimeBodyPart pdfAttachment = new MimeBodyPart();
-      pdfAttachment.attachFile(pdfFile);
-      email.addBodyPart(pdfAttachment);
-
-      MimeBodyPart csvAttachment = new MimeBodyPart();
-      csvAttachment.attachFile(csvFile);
-      email.addBodyPart(csvAttachment);
-
-    } catch (MessagingException | IOException e) {
-      e.printStackTrace();
-    }
-    message.setContent(email);
-    sendEmail(message);
-
-  }
-
-  public static void sendEmail(MimeMessage message) throws IOException {
-
-    try {
-      Transport.send(message);
-      log.info("Email sending completed");
-    } catch (MessagingException e) {
-      log.info("Error in email sending");
-      throw new RuntimeException(e);
-    }
-  }
-
+  /**
+   * Send line description in email. The line description details gathered while validation of files.
+   *
+   * @throws AddressException the address exception
+   * @throws MessagingException the messaging exception
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public static void sendLineDescInEmail()
       throws AddressException, MessagingException, IOException {
 
@@ -161,37 +121,12 @@ public class EmailConfig {
 
   }
 
-  public static void invalidCommunityCodeInFileName(String csvFileName) {
-
-    try {
-      Multipart email = new MimeMultipart();
-
-      MimeMessage message = getMessage(
-          Application.CURRENT_HOUR + ": Invalid communicaty code in file name " + csvFileName);
-
-      MimeBodyPart textBodyPart = new MimeBodyPart();
-
-      StringBuilder sb = new StringBuilder("Dear User");
-      sb.append("<br><br>The file name" + csvFileName + " contains invalid community code");
-      textBodyPart.setContent(sb.toString(), "text/html");
-      email.addBodyPart(textBodyPart);
-      message.setContent(email, "text/html");
-      sendEmail(message);
-
-    } catch (Exception e) {
-      log.info("Error while sending email InvalidCommunityCodeInFileName " + e.getMessage());
-    }
-
-  }
-
-  private static final String EMAIL_TABLE_LINE_DESC =
-      "<table border='1' style='border-collapse:collapse;border:1px solid;' cellpadding='3'><thead><tr><th>VenCode</th><th>Invoice number</th><th>Line description</th></tr></thead>";
-  
-  private static final String EMAIL_TABLE_PROCESSING_STATUS =
-      "<table border='1' style='border-collapse:collapse;border:1px solid;' cellpadding='3'><thead><tr><th>File name</th><th>Processing status</th></tr></thead>";
-
-  
-  public static void sendProcessiongStatus(String processingStatus) {
+  /**
+   * Send processing status.
+   *
+   * @param processingStatus Status message
+   */
+  public static void sendProcessingStatusEmail(String processingStatus) {
 
     try {
       Multipart email = new MimeMultipart();
@@ -202,19 +137,20 @@ public class EmailConfig {
 
       StringBuilder sb = new StringBuilder("Dear User");
       sb.append("<br><br>Processing status message  :" + processingStatus);
-      
+
       sb.append("<br><br>Details of each file is as below  :<br><br>");
-      if(!Application.UPLOAD_PROCESSING_STATUS.isEmpty()) {
+      if (!Application.UPLOAD_PROCESSING_STATUS.isEmpty()) {
         sb.append(EMAIL_TABLE_PROCESSING_STATUS);
         Application.UPLOAD_PROCESSING_STATUS.entrySet().forEach(entry -> {
-          sb.append("<tr><td>" + entry.getKey()+"</td><td>"+entry.getValue()+"</td></tr>");
+          sb.append("<tr><td>" + entry.getKey() + "</td><td>" + entry.getValue() + "</td></tr>");
         });
         sb.append("</table>");
       }
-      sb.append("<br><br>If email contains pdf file in attachment then read each pdf file and correct csv file from attachment. After correction please upload csv file to FTP again.");
+      sb.append(
+          "<br><br>If email contains pdf file in attachment then read each pdf file and correct csv file from attachment. After correction please upload csv file to FTP again.");
       textBodyPart.setContent(sb.toString(), "text/html");
       email.addBodyPart(textBodyPart);
-      
+
       File folder = new File(Application.CURRENT_HOUR_FOLDER);
       File[] listOfFiles = folder.listFiles();
       log.info("Attach ");
@@ -237,8 +173,8 @@ public class EmailConfig {
           log.info("Error while reading file " + fileName);
         }
       }
-      
-      if(!Application.EXCEPTION_REPORTS.isEmpty()) {
+
+      if (!Application.EXCEPTION_REPORTS.isEmpty()) {
         Application.EXCEPTION_REPORTS.forEach(pdfPath -> {
           try {
             MimeBodyPart csvFile = new MimeBodyPart();
@@ -246,7 +182,7 @@ public class EmailConfig {
             email.addBodyPart(csvFile);
           } catch (MessagingException | IOException e) {
             e.printStackTrace();
-          }  
+          }
         });
       }
       message.setContent(email, "text/html");
@@ -258,37 +194,50 @@ public class EmailConfig {
 
   }
 
-  public static void sendDuplicateInvoiceEmail(String csvFileNameWithPath,String csvFileName, String errorInPopup) {
+  /**
+   * Generates MimeMessage with subject
+   *
+   * @param subject Provide subject line to add in message
+   * @return the message
+   */
+  private static MimeMessage getMessage(String subject) {
 
+    MimeMessage message = new MimeMessage(getMailSession());
+    try {
+      message.setFrom(Application.EMAIL_SENDER);
+      message.addRecipients(Message.RecipientType.TO,
+          Application.EMAIL_RECEIVER.toArray(new InternetAddress[0]));
+      message.setHeader("Content-Type", "text/html");
+      message.setContent(message, "text/html");
+      message.setSubject(subject);
+    } catch (MessagingException e) {
+      e.printStackTrace();
+    }
+    return message;
+  }
+
+  /**
+   * Send email.
+   *
+   * @param message the message
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
+  public static void sendEmail(MimeMessage message) throws IOException {
 
     try {
-      Multipart email = new MimeMultipart();
-
-      MimeMessage message = getMessage(
-          Application.CURRENT_HOUR + ": Duplicate Invoice Error " + csvFileName);
-
-      MimeBodyPart textBodyPart = new MimeBodyPart();
-
-      StringBuilder sb = new StringBuilder("Dear User");
-      sb.append("<br><br>The file name" + csvFileName + " had duplicate invoice error popup, Error message is as below");
-      sb.append("<br><br>Error :"+errorInPopup);
-      textBodyPart.setContent(sb.toString(), "text/html");
-      email.addBodyPart(textBodyPart);
-      try {
-        MimeBodyPart pdfAttachment = new MimeBodyPart();
-        pdfAttachment.attachFile(csvFileNameWithPath);
-        email.addBodyPart(pdfAttachment);
-      } catch (MessagingException | IOException e) {
-        e.printStackTrace();
-      }
-      message.setContent(email, "text/html");
-      sendEmail(message);
-
-    } catch (Exception e) {
-      log.info("Error while sending email sendDuplicateInvoiceEmail " + e.getMessage());
+      Transport.send(message);
+      log.info("Email sending completed");
+    } catch (MessagingException e) {
+      log.info("Error in email sending");
+      throw new RuntimeException(e);
     }
-
-  
-    
   }
+
+  private static final String EMAIL_TABLE_LINE_DESC =
+      "<table border='1' style='border-collapse:collapse;border:1px solid;' cellpadding='3'><thead><tr><th>VenCode</th><th>Invoice number</th><th>Line description</th></tr></thead>";
+
+  private static final String EMAIL_TABLE_PROCESSING_STATUS =
+      "<table border='1' style='border-collapse:collapse;border:1px solid;' cellpadding='3'><thead><tr><th>File name</th><th>Processing status</th></tr></thead>";
+
+
 }

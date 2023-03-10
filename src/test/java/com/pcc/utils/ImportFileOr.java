@@ -4,6 +4,9 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.How;
 
+/**
+ * The Class ImportFileOr.
+ */
 public class ImportFileOr {
 	@FindBy(how=How.XPATH,using="//*[@id=\"un\"]")
 	public WebElement uname;

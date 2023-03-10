@@ -14,6 +14,9 @@ import com.pcc.app.Application;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The Class FtpConnection.
+ */
 @Slf4j
 public class FtpConnection {
 	private FTPClient ftpClient = new FTPClient();
@@ -23,10 +26,18 @@ public class FtpConnection {
 	private final String pass = Application.configProps.getProperty("pcc.ftp.password", "");// "Ay48pMM";
 	private final String remotePath = Application.configProps.getProperty("pcc.ftp.remotepath", "//In//Test//");// "Ay48pMM";
 
+	/**
+	 * Instantiates a new ftp connection.
+	 */
 	public FtpConnection() {
 
 	}
 
+	/**
+	 * Connect to FTP server
+	 *
+	 * @return true, if successful
+	 */
 	public boolean connect() {
 		log.info("Connecting to FTP server {}",server);
 		try {
@@ -45,6 +56,11 @@ public class FtpConnection {
 
 	}
 
+	/**
+	 * Download files from FTP server
+	 *
+	 * @return the int
+	 */
 	public int downloadFiles() {
 		log.info("Downloading files");
 		try {
@@ -91,8 +107,8 @@ public class FtpConnection {
 					writingStream.close();
 					readingStream.close();
 
-					boolean deleteFile = true; 
-//					boolean deleteFile = ftpClient.deleteFile(remoteFileToDelete);
+//					boolean deleteFile = true; 
+					boolean deleteFile = ftpClient.deleteFile(remoteFileToDelete);
 					log.info("Remote file {} delete status {}",remoteFileToDelete,deleteFile);
 
 					fileCounter++;

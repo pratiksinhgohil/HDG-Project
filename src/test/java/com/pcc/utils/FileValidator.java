@@ -18,6 +18,9 @@ import com.pcc.app.Application;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The Class FileValidator implements method to validate CSV files
+ */
 @Slf4j
 public class FileValidator {
 
@@ -45,6 +48,11 @@ public class FileValidator {
 
 	public boolean skipValidation = false;
 
+	/**
+	 * Validate CSV files.
+	 *
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public void validateFiles() throws IOException {
 		log.info("Starting file validation");
 
@@ -71,6 +79,12 @@ public class FileValidator {
 		}
 	}
 
+	/**
+	 * Read data line by line.
+	 *
+	 * @param file the file
+	 * @return the list
+	 */
 	public static List<LinkedHashMap<String, String>> readDataLineByLine(String file) {
 		List<LinkedHashMap<String, String>> allRecords = new ArrayList<>();
 		List<List<String>> fileRecords = new ArrayList<>();
@@ -113,6 +127,13 @@ public class FileValidator {
 		return allRecords;
 	}
 
+	/**
+	 * Validate all records.
+	 *
+	 * @param allRecords the all records
+	 * @param fileName the file name
+	 * @return the validated data
+	 */
 	public ValidatedData validateAllRecords(List<LinkedHashMap<String, String>> allRecords,String fileName) {
 
 		if (skipValidation) {
@@ -176,10 +197,6 @@ public class FileValidator {
 								.matches(String.valueOf(monthValue - 1)))) {
 
 				} else {
-					//inValid = allRecords.get(i);
-					//inValid.put(MESSAGE, "Invalid fiscal month");
-					//invalidRecords.add(inValid);
-					//continue label;
 					allRecords.get(i).replace(FISCAL_MONTH, month);
 				}
 
@@ -188,10 +205,6 @@ public class FileValidator {
 					if (allRecords.get(i).get(FISCAL_MONTH).matches(month)
 							|| allRecords.get(i).get(FISCAL_MONTH).matches("12")) {
 					} else {
-						//inValid = allRecords.get(i);
-						//inValid.put(MESSAGE, "Invalid fiscal month/year info");
-						//invalidRecords.add(inValid);
-						//continue label;
 						allRecords.get(i).replace(FISCAL_YEAR, String.valueOf(year));
 					}
 				}
@@ -203,14 +216,6 @@ public class FileValidator {
 					invalidRecords.add(inValid);
 					continue label;
 				}
-
-				// The ID1099Amount column allowed as blank
-				// if (allRecords.get(i).get(ID1099_AMOUNT).isBlank()) {
-				// inValid = allRecords.get(i);
-				// inValid.put(MESSAGE, "Invalid ID1099Amount");
-				// invalidRecords.add(inValid);
-				// continue label;
-				// }
 
 				// InvoiceAmount is not allowed as blank
 				if (allRecords.get(i).getOrDefault(INVOICE_AMOUNT, "").isBlank()) {
@@ -239,10 +244,19 @@ public class FileValidator {
 		return new ValidatedData(validRecords, invalidRecords);
 	}
 
+	/**
+	 * The Class ValidatedData.
+	 */
 	public class ValidatedData {
 		List<LinkedHashMap<String, String>> validRecords;
 		List<LinkedHashMap<String, String>> invalidRecords;
 
+		/**
+		 * Instantiates a new validated data.
+		 *
+		 * @param validRecords the valid records
+		 * @param invalidRecords the invalid records
+		 */
 		public ValidatedData(List<LinkedHashMap<String, String>> validRecords,
 				List<LinkedHashMap<String, String>> invalidRecords) {
 			this.validRecords = validRecords;
@@ -250,6 +264,13 @@ public class FileValidator {
 		}
 	}
 
+	/**
+	 * Write CSV.
+	 *
+	 * @param fileName the file name
+	 * @param records the records
+	 * @param validData the valid data
+	 */
 	public static void writeCSV(String fileName, List<LinkedHashMap<String, String>> records, boolean validData) {
 		String filePath = (validData ? Application.CURRENT_HOUR_FOLDER_VALID_FILES
 				: Application.CURRENT_HOUR_FOLDER_IN_VALID_FILES) + "//" + fileName;
@@ -278,6 +299,11 @@ public class FileValidator {
 		}
 	}
 
+	/**
+	 * Creates the file.
+	 *
+	 * @param path the path
+	 */
 	public static void createFile(String path) {
 		try {
 			log.info("Creating file {}", path);
@@ -295,10 +321,20 @@ public class FileValidator {
 		}
 	}
 
+	/**
+	 * Hash invalid files.
+	 *
+	 * @return the int
+	 */
 	public int hashInvalidFiles() {
 		return invalidFileCounter;
 	}
 
+	/**
+	 * Hash valid files.
+	 *
+	 * @return the int
+	 */
 	public int hashValidFiles() {
 		return validFileCounter;
 	}

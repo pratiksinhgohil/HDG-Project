@@ -31,6 +31,11 @@ import com.pcc.utils.ImportFile;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The Class Application in main class for CSV processor
+ * 
+ * Refer process flow diagram how it works
+ */
 @Slf4j
 public class Application {
 
@@ -58,6 +63,18 @@ public class Application {
   public static Set<String> EXCEPTION_REPORTS = new HashSet<>();
   public static Properties HDG_PCC_CODE_MAP = new Properties();
 
+  /**
+   * Setup method initialize system and prepare necessary folders
+   * 1) Connect to FTP server
+   * 2) Validate file
+   * 3) Send invalid file email
+   * 4) Initiate chrome browser 
+   *
+   * @throws InterruptedException the interrupted exception
+   * @throws IOException Signals that an I/O exception has occurred.
+   * @throws AddressException the address exception
+   * @throws MessagingException the messaging exception
+   */
   @BeforeClass
   public void setup()
       throws InterruptedException, IOException, AddressException, MessagingException {
@@ -125,15 +142,11 @@ public class Application {
     } else {
       log.info("Issue in FTP connection");
     }
-  }
+  } 
 
-  /*
-   * @AfterClass 
-   * public void finish() throws InterruptedException {
-   * Thread.sleep(2000); driver.close(); }
+  /**
+   * Close browser.
    */
-
-
   @AfterClass
   public void closeBrowser() {
     try {
@@ -147,6 +160,11 @@ public class Application {
     }
   }
 
+  /**
+   * Import file initialize file upload .
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void Import_File() throws Exception {
     String processingStatus = "";
@@ -192,24 +210,13 @@ public class Application {
       //
     }
     log.info("Processing status " + processingStatus);
-    EmailConfig.sendProcessiongStatus(processingStatus);
+    EmailConfig.sendProcessingStatusEmail(processingStatus);
   }
-
-  /*
-   * @Test public void FTP_Connection() throws InterruptedException, AWTException
-   * { Mail_scheduler.FTP_Connection conn = new Mail_scheduler.FTP_Connection();
-   * 
-   * conn.con();
-   * 
-   * }
-   * 
-   * @Test public void Setup_email() throws InterruptedException, AWTException,
-   * IOException { Mail_scheduler.Setup_email email = new
-   * Mail_scheduler.Setup_email();
-   * 
-   * email.emailsent();
-   * 
-   * }
+ 
+  /**
+   * Dry run.
+   * Do not un-comment test annotation, this method used while development
+   * @throws Exception the exception
    */
   //@Test
   public void DryRun() throws Exception {
@@ -231,6 +238,11 @@ public class Application {
 
   }
 
+  /**
+   * Load properties from file pcc.properties
+   *
+   * @return the properties
+   */
   private static Properties loadProperties() {
     if (APP_BASE_PATH == null) {
       log.info("Please set APP_BASE_PATH");
@@ -253,6 +265,9 @@ public class Application {
     }
   }
 
+  /**
+   * Prepare community code map from file hdg-pcc-code-mapping.properties.
+   */
   private static void prepareCommunityCodeMap() {
     if (APP_BASE_PATH == null) {
       log.info("Please set APP_BASE_PATH");
@@ -274,6 +289,11 @@ public class Application {
     }
   }
 
+  /**
+   * Creates the dir.
+   *
+   * @param path the path
+   */
   public static void createDir(String path) {
     log.info("Creating folder {}", path);
     File file = new File(path + "//");
