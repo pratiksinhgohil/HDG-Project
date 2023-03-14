@@ -145,7 +145,7 @@ public class ImportFile extends ImportFileOr {
             Thread.sleep(6000);
             return true;
           }else {
-            Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Community code not found in configuration");
+            Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Community code not found in configuration(hdg-pcc-code-mapping.properties)");
           } 
         } 
       } 

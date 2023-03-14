@@ -38,7 +38,8 @@ public class EmailConfig {
 
     return Session.getDefaultInstance(prop, new javax.mail.Authenticator() {
       protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-        return new javax.mail.PasswordAuthentication(Application.EMAIL_SENDER, Application.configProps.getProperty("pcc.mail.sender.password"));
+        return new javax.mail.PasswordAuthentication(Application.EMAIL_SENDER,
+            Application.configProps.getProperty("pcc.mail.sender.password"));
       }
     });
   }
@@ -68,11 +69,14 @@ public class EmailConfig {
     try {
       File folder = new File(Application.CURRENT_HOUR_FOLDER_IN_VALID_FILES);
       File[] listOfFiles = folder.listFiles();
-      for (File file : listOfFiles) {
-        MimeBodyPart attachment = new MimeBodyPart();
-        attachment.attachFile(file.getCanonicalPath());
-        email.addBodyPart(attachment);
+      if (listOfFiles != null) {
+        for (File file : listOfFiles) {
+          MimeBodyPart attachment = new MimeBodyPart();
+          attachment.attachFile(file.getCanonicalPath());
+          email.addBodyPart(attachment);
+        }
       }
+
     } catch (MessagingException | IOException e) {
       e.printStackTrace();
     }
@@ -138,41 +142,45 @@ public class EmailConfig {
       StringBuilder sb = new StringBuilder("Dear User");
       sb.append("<br><br>Processing status message  :" + processingStatus);
 
-      sb.append("<br><br>Details of each file is as below  :<br><br>");
+      
       if (!Application.UPLOAD_PROCESSING_STATUS.isEmpty()) {
+        sb.append("<br><br>Details of each file is as below  :<br><br>");
         sb.append(EMAIL_TABLE_PROCESSING_STATUS);
         Application.UPLOAD_PROCESSING_STATUS.entrySet().forEach(entry -> {
           sb.append("<tr><td>" + entry.getKey() + "</td><td>" + entry.getValue() + "</td></tr>");
         });
         sb.append("</table>");
+        sb.append(
+            "<br><br>If email contains pdf file in attachment then read each pdf file and correct csv file from attachment. After correction please upload csv file to FTP again.");
+
       }
-      sb.append(
-          "<br><br>If email contains pdf file in attachment then read each pdf file and correct csv file from attachment. After correction please upload csv file to FTP again.");
       textBodyPart.setContent(sb.toString(), "text/html");
       email.addBodyPart(textBodyPart);
 
       File folder = new File(Application.CURRENT_HOUR_FOLDER);
       File[] listOfFiles = folder.listFiles();
-      log.info("Attach ");
-      for (File file : listOfFiles) {
-        String fileName = file.getName();
-        try {
-          if (file.isFile()) {
-            try {
-              MimeBodyPart csvFile = new MimeBodyPart();
-              csvFile.attachFile(file.getCanonicalPath());
-              email.addBodyPart(csvFile);
-            } catch (MessagingException | IOException e) {
-              e.printStackTrace();
-            }
+      if(listOfFiles != null) {
+        for (File file : listOfFiles) {
+          String fileName = file.getName();
+          try {
+            if (file.isFile()) {
+              try {
+                MimeBodyPart csvFile = new MimeBodyPart();
+                csvFile.attachFile(file.getCanonicalPath());
+                email.addBodyPart(csvFile);
+              } catch (MessagingException | IOException e) {
+                e.printStackTrace();
+              }
 
-          } else if (file.isDirectory()) {
-            log.info(fileName + " is not file");
+            } else if (file.isDirectory()) {
+              log.info(fileName + " is not file");
+            }
+          } catch (Exception e) {
+            log.info("Error while reading file " + fileName);
           }
-        } catch (Exception e) {
-          log.info("Error while reading file " + fileName);
         }
       }
+      
 
       if (!Application.EXCEPTION_REPORTS.isEmpty()) {
         Application.EXCEPTION_REPORTS.forEach(pdfPath -> {
