@@ -25,7 +25,8 @@ public class ImportFile extends ImportFileOr {
   WebDriver driver;
   private static final String URL = "https://www25.pointclickcare.com/home/home.jsp?ESOLnewlogin=N";
   private static final String ELEMENT = "//*[@id=\"pccFacLink\"]";
-
+  
+  
 
   /**
    * Instantiates a new import file.
@@ -65,8 +66,16 @@ public class ImportFile extends ImportFileOr {
    *
    * @throws InterruptedException the interrupted exception
    */
-  public void submit() throws InterruptedException {
+  public void submit() throws InterruptedException,  AWTException {
     submit.click();
+//    driver.get("chrome://settings/content/pdfDocuments");
+//    Robot a = new Robot();
+//    a.keyPress(KeyEvent.VK_TAB);
+//    a.keyRelease(KeyEvent.VK_TAB);
+//    a.keyPress(KeyEvent.VK_UP);
+//    a.keyRelease(KeyEvent.VK_UP);
+//    Thread.sleep(1000);
+//    driver.navigate().to("https://www25.pointclickcare.com/home/home.jsp");
     Thread.sleep(7000);
 
   }
@@ -139,7 +148,7 @@ public class ImportFile extends ImportFileOr {
             Thread.sleep(2000);
             driver.findElement(By.id("facSearchFilter")).sendKeys(searchText);
             Thread.sleep(2000);
-            driver.findElement(By.className("pccButton")).click();
+           driver.findElement(By.className("pccButton")).click();
             Thread.sleep(2000);
             driver.findElement(By.xpath(xpathExpression)).click();
             Thread.sleep(6000);
@@ -178,20 +187,20 @@ public class ImportFile extends ImportFileOr {
    * @throws AWTException the AWT exception
    */
   public void popUpHandler(String csvFileNameWithPath, String pdfName, String fileName) throws Exception, AWTException {
-
-    log.info("Uploaded file path" + csvFileNameWithPath + " Error report PDF " + pdfName
+   log.info("Uploaded file path" + csvFileNameWithPath + " Error report PDF " + pdfName
         + " exc_repo.getAccessibleName() >>> " + exc_repo.getAccessibleName());
     if (exc_repo.getAccessibleName().equalsIgnoreCase("Exceptions Report")) {
       Application.UPLOAD_PROCESSING_STATUS.put(fileName, "Exception report generated");
       exc_repo.click();
       Thread.sleep(10000);
 
-      Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
       Clipboard clipboard = toolkit.getSystemClipboard();
       StringSelection strSel = new StringSelection(pdfName);
       Application.EXCEPTION_REPORTS.add(pdfName);
       clipboard.setContents(strSel, null);
 
+      log.info("Saving pdf step 1");
       Robot rb = new Robot();
 
       rb.keyPress(KeyEvent.VK_CONTROL);
@@ -199,35 +208,35 @@ public class ImportFile extends ImportFileOr {
       rb.keyRelease(KeyEvent.VK_CONTROL);
       rb.keyRelease(KeyEvent.VK_P);
       Thread.sleep(5000);
-
+      log.info("Saving pdf step 2");
       rb.keyPress(KeyEvent.VK_ENTER);
       rb.keyRelease(KeyEvent.VK_ENTER);
-
+      log.info("Saving pdf step 3");
       Thread.sleep(3000);
       rb.keyPress(KeyEvent.VK_CONTROL);
       rb.keyPress(KeyEvent.VK_V);
       rb.keyRelease(KeyEvent.VK_V);
       rb.keyRelease(KeyEvent.VK_CONTROL);
       Thread.sleep(2000);
-
+      log.info("Saving pdf step 4");
       rb.keyPress(KeyEvent.VK_ENTER);
       rb.keyRelease(KeyEvent.VK_ENTER);
-      Thread.sleep(5000);
-
-
+      Thread.sleep(20000);
+      
+      log.info("Saving pdf step 5");
       rb.keyPress(KeyEvent.VK_CONTROL);
       rb.keyPress(KeyEvent.VK_W);
-
+      log.info("Saving pdf step 6");
       rb.keyRelease(KeyEvent.VK_CONTROL);
       rb.keyRelease(KeyEvent.VK_W);
-
+      log.info("Saving pdf step 7");
       rb.keyPress(KeyEvent.VK_CONTROL);
       rb.keyPress(KeyEvent.VK_SHIFT);
       rb.keyPress(KeyEvent.VK_TAB);
       rb.keyRelease(KeyEvent.VK_CONTROL);
       rb.keyRelease(KeyEvent.VK_SHIFT);
       rb.keyRelease(KeyEvent.VK_TAB);
-
+      log.info("Saving pdf step 8");
       // Send email
       //EmailConfig.sendExceptionReport(pdfName, csvFileNameWithPath,fileName);
       Thread.sleep(5000);

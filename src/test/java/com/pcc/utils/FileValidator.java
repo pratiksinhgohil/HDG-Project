@@ -60,21 +60,37 @@ public class FileValidator {
 		File[] listOfFiles = folder.listFiles();
 		for (File file : listOfFiles) {
 
-			if (file.isFile() && file.getName().endsWith(".csv")) {
-				log.info("Validating file : " + file.getName());
-				List<LinkedHashMap<String, String>> allRecords = readDataLineByLine(file.getCanonicalPath());
-				ValidatedData data = validateAllRecords(allRecords,file.getName());
+			String fileName = file.getName();
+        if (file.isFile() && fileName.endsWith(".csv")) {
+				log.info("Validating file : " + fileName +" Size >>>>"+file.length());
+				
+				if(file.length()==0) {
+				  Application.UPLOAD_PROCESSING_STATUS.put(fileName, "This file is empty");
+				}else {
+				  try {
+	                  
+	                  List<LinkedHashMap<String, String>> allRecords = readDataLineByLine(file.getCanonicalPath(),fileName);
+	                  ValidatedData data = validateAllRecords(allRecords,fileName);
 
-				if (data.validRecords.size() > 0) {
-					validFileCounter++;
-					log.info("File {} have {} valid records", file.getName(), data.validRecords.size());
+	                    if (data.validRecords.size() > 0) {
+	                        validFileCounter++;
+	                        log.info("File {} have {} valid records", fileName, data.validRecords.size());
+	                    }
+	                    if (data.invalidRecords.size() > 0) {
+	                        log.info("File {} have {} invalid records", fileName, data.invalidRecords.size());
+	                        invalidFileCounter++;
+	                    }
+	                    writeCSV(fileName, data.validRecords, true);
+	                    writeCSV(fileName, data.invalidRecords, false);
+	                    if(data.validRecords.isEmpty() &&  data.invalidRecords.isEmpty()) {
+	                      Application.UPLOAD_PROCESSING_STATUS.put(fileName, "File had not any records after validation may be special character in file or format issue");    
+	                    }
+	                } catch (Exception e) {
+	                  Application.UPLOAD_PROCESSING_STATUS.put(fileName, "Error while processing file");
+	                }
 				}
-				if (data.invalidRecords.size() > 0) {
-					log.info("File {} have {} invalid records", file.getName(), data.invalidRecords.size());
-					invalidFileCounter++;
-				}
-				writeCSV(file.getName(), data.validRecords, true);
-				writeCSV(file.getName(), data.invalidRecords, false);
+				
+
 			}
 		}
 	}
@@ -82,10 +98,11 @@ public class FileValidator {
 	/**
 	 * Read data line by line.
 	 *
-	 * @param file the file
+	 * @param fileNameWithPath the file
+	 * @param fileName 
 	 * @return the list
 	 */
-	public static List<LinkedHashMap<String, String>> readDataLineByLine(String file) {
+	public static List<LinkedHashMap<String, String>> readDataLineByLine(String fileNameWithPath, String fileName) {
 		List<LinkedHashMap<String, String>> allRecords = new ArrayList<>();
 		List<List<String>> fileRecords = new ArrayList<>();
 
@@ -93,8 +110,8 @@ public class FileValidator {
 		CSVReader csvReader = null;
 
 		try {
-			log.info("Reading file to validate {}", file);
-			filereader = new FileReader(file);
+			log.info("Reading file to validate {}", fileNameWithPath);
+			filereader = new FileReader(fileNameWithPath);
 			csvReader = new CSVReader(filereader);
 			String[] nextRecord;
 			List<String> header = new ArrayList<>();
@@ -123,6 +140,7 @@ public class FileValidator {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			Application.UPLOAD_PROCESSING_STATUS.put(fileName, "Error while reading file"+e.getMessage());
 		}
 		return allRecords;
 	}
@@ -292,9 +310,10 @@ public class FileValidator {
 				}
 				writer.flush();
 				writer.close();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				log.info("Error while writng CSV file in FileValidator");
 				e.printStackTrace();
+				Application.UPLOAD_PROCESSING_STATUS.put(fileName, "Error while writng CSV file in FileValidator "+e.getMessage());
 			}
 		}
 	}
@@ -315,7 +334,7 @@ public class FileValidator {
 			} else {
 				file.createNewFile();
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.info("Error while creating file in FileValidator");
 			e.printStackTrace();
 		}

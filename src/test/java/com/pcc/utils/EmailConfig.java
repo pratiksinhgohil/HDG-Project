@@ -129,8 +129,9 @@ public class EmailConfig {
    * Send processing status.
    *
    * @param processingStatus Status message
+   * @param attachFiles 
    */
-  public static void sendProcessingStatusEmail(String processingStatus) {
+  public static void sendProcessingStatusEmail(String processingStatus, boolean attachFiles) {
 
     try {
       Multipart email = new MimeMultipart();
@@ -142,7 +143,7 @@ public class EmailConfig {
       StringBuilder sb = new StringBuilder("Dear User");
       sb.append("<br><br>Processing status message  :" + processingStatus);
 
-      
+
       if (!Application.UPLOAD_PROCESSING_STATUS.isEmpty()) {
         sb.append("<br><br>Details of each file is as below  :<br><br>");
         sb.append(EMAIL_TABLE_PROCESSING_STATUS);
@@ -154,14 +155,15 @@ public class EmailConfig {
             "<br><br>If email contains pdf file in attachment then read each pdf file and correct csv file from attachment. After correction please upload csv file to FTP again.");
 
       }
-      textBodyPart.setContent(sb.toString(), "text/html");
+      
       email.addBodyPart(textBodyPart);
-
+      log.info("Attaching files from folder "+Application.CURRENT_HOUR_FOLDER+" with flag "+attachFiles);
       File folder = new File(Application.CURRENT_HOUR_FOLDER);
       File[] listOfFiles = folder.listFiles();
-      if(listOfFiles != null) {
+      if (listOfFiles != null && attachFiles) {
         for (File file : listOfFiles) {
           String fileName = file.getName();
+          log.info("Attaching file(before isFileCcheck) "+fileName);
           try {
             if (file.isFile()) {
               try {
@@ -180,19 +182,26 @@ public class EmailConfig {
           }
         }
       }
-      
+
 
       if (!Application.EXCEPTION_REPORTS.isEmpty()) {
-        Application.EXCEPTION_REPORTS.forEach(pdfPath -> {
-          try {
-            MimeBodyPart csvFile = new MimeBodyPart();
-            csvFile.attachFile(pdfPath);
-            email.addBodyPart(csvFile);
-          } catch (MessagingException | IOException e) {
-            e.printStackTrace();
+        for (String pdfPath : Application.EXCEPTION_REPORTS) {
+          File fileObj = new File(pdfPath);
+          if (fileObj.exists()) {
+            try {
+              MimeBodyPart pdfFileBody = new MimeBodyPart();
+              pdfFileBody.attachFile(pdfPath);
+              email.addBodyPart(pdfFileBody);
+
+            } catch (Exception e) {
+              log.info("Error while reading attaching pdf " + pdfPath + ">>." + e.getMessage());
+            }
+          } else {
+            sb.append("<br><br>Exception report missing(Check browser setting)." + pdfPath);
           }
-        });
+        }
       }
+      textBodyPart.setContent(sb.toString(), "text/html");
       message.setContent(email, "text/html");
       sendEmail(message);
 
@@ -214,7 +223,7 @@ public class EmailConfig {
     try {
       message.setFrom(Application.EMAIL_SENDER);
       message.addRecipients(Message.RecipientType.TO,
-          Application.EMAIL_RECEIVER.toArray(new InternetAddress[0]));
+          Application.EMAIL_RECEIVER.toArray(new InternetAddress[Application.EMAIL_RECEIVER.size()]));
       message.setHeader("Content-Type", "text/html");
       message.setContent(message, "text/html");
       message.setSubject(subject);
