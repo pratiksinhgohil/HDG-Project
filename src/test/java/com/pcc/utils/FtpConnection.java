@@ -20,11 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FtpConnection {
 	private FTPClient ftpClient = new FTPClient();
-	private final String server = Application.configProps.getProperty("pcc.ftp.host", ""); // "FTP.dssinetwork.com";
-	private final int port = 21;
-	private final String user = Application.configProps.getProperty("pcc.ftp.username", "");// "HDG";
-	private final String pass = Application.configProps.getProperty("pcc.ftp.password", "");// "Ay48pMM";
-	private final String remotePath = Application.configProps.getProperty("pcc.ftp.remotepath", "//In//Test//");// "Ay48pMM";
 
 	/**
 	 * Instantiates a new ftp connection.
@@ -39,9 +34,14 @@ public class FtpConnection {
 	 * @return true, if successful
 	 */
 	public boolean connect() {
-		log.info("Connecting to FTP server {}",server);
+		String server = Application.APP_CONFIG.getConfigProps().getProperty("pcc.ftp.host", ""); // "FTP.dssinetwork.com";
+		String user = Application.APP_CONFIG.getConfigProps().getProperty("pcc.ftp.username", "");// "HDG";
+		String pass = Application.APP_CONFIG.getConfigProps().getProperty("pcc.ftp.password", "");// "Ay48pMM";
+		
+		log.info("Connecting to FTP server {}", server);
+
 		try {
-			ftpClient.connect(server, port);
+			ftpClient.connect(server, 21);
 			ftpClient.login(user, pass);
 			ftpClient.enterLocalPassiveMode();
 			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
@@ -50,7 +50,7 @@ public class FtpConnection {
 		} catch (IOException ex) {
 			log.info("Error in FTP connection : " + ex.getMessage());
 			ex.printStackTrace();
-			
+
 			return false;
 		}
 
@@ -64,6 +64,8 @@ public class FtpConnection {
 	public int downloadFiles() {
 		log.info("Downloading files");
 		try {
+			String remotePath = Application.APP_CONFIG.getConfigProps().getProperty("pcc.ftp.remotepath", "//In//Test//");// "Ay48pMM";
+
 			String[] remoteFiles = ftpClient.listNames(remotePath);
 
 			if (remoteFiles != null && remoteFiles.length == 0) {
@@ -74,13 +76,13 @@ public class FtpConnection {
 			for (String remoteFile : remoteFiles) {
 
 				if (remoteFile.endsWith(".csv")) {
-					String remoteFileToDelete = remotePath +"/"+ remoteFile;
+					String remoteFileToDelete = remotePath + "/" + remoteFile;
 					log.info("Remote file : " + remoteFileToDelete + " copying to "
-							+ Application.CURRENT_HOUR_FOLDER + "//" + remoteFile);
+							+ Application.APP_CONFIG.getCurrentHourFolder() + "//" + remoteFile);
 
 					InputStream readingStream = ftpClient.retrieveFileStream(remoteFileToDelete);
 
-					File file = new File(Application.CURRENT_HOUR_FOLDER + "//" + remoteFile);
+					File file = new File(Application.APP_CONFIG.getCurrentHourFolder() + "//" + remoteFile);
 					file.getParentFile().mkdirs();
 					if (file.exists()) {
 						file.delete();
@@ -90,7 +92,7 @@ public class FtpConnection {
 					}
 
 					OutputStream writingStream = new BufferedOutputStream(
-							new FileOutputStream(Application.CURRENT_HOUR_FOLDER + "//" + remoteFile));
+							new FileOutputStream(Application.APP_CONFIG.getCurrentHourFolder() + "//" + remoteFile));
 
 					byte[] bytesArray = new byte[4096];
 					int bytesRead = -1;
@@ -101,7 +103,8 @@ public class FtpConnection {
 					boolean success = ftpClient.completePendingCommand();
 
 					if (success) {
-						log.info(" {}// {} has been downloaded successfully.",Application.CURRENT_HOUR_FOLDER,remoteFile);
+						log.info(" {}// {} has been downloaded successfully.",
+								Application.APP_CONFIG.getCurrentHourFolder(), remoteFile);
 					}
 
 					writingStream.close();
@@ -109,13 +112,13 @@ public class FtpConnection {
 
 //					boolean deleteFile = true; 
 					boolean deleteFile = ftpClient.deleteFile(remoteFileToDelete);
-					log.info("Remote file {} delete status {}",remoteFileToDelete,deleteFile);
+					log.info("Remote file {} delete status {}", remoteFileToDelete, deleteFile);
 
 					fileCounter++;
 				}
 			}
 
-			return fileCounter; 
+			return fileCounter;
 
 		} catch (IOException ex) {
 			log.info("Error in FTP connection : " + ex.getMessage());

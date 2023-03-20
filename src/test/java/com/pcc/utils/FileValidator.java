@@ -42,10 +42,6 @@ public class FileValidator {
 
 	public static String[] CSV_HEADERS = { VEN_CODE, INV_NUM, INV_DATE, FISCAL_YEAR, FISCAL_MONTH, TRANSACTION_AMOUNT,
 			ID1099_AMOUNT, INVOICE_AMOUNT, DESCRIPTION, ACCOUNT_NUM, LINE_DESCRIPTION };
-	Calendar cal = Calendar.getInstance();
-	int current_year = cal.get(Calendar.YEAR);
-	int current_month = cal.get(Calendar.MONTH) + 1;
-
 	public boolean skipValidation = false;
 
 	/**
@@ -56,40 +52,46 @@ public class FileValidator {
 	public void validateFiles() throws IOException {
 		log.info("Starting file validation");
 
-		File folder = new File(Application.CURRENT_HOUR_FOLDER);
+		File folder = new File(Application.APP_CONFIG.getCurrentHourFolder());
 		File[] listOfFiles = folder.listFiles();
 		for (File file : listOfFiles) {
 
 			String fileName = file.getName();
-        if (file.isFile() && fileName.endsWith(".csv")) {
-				log.info("Validating file : " + fileName +" Size >>>>"+file.length());
-				
-				if(file.length()==0) {
-				  Application.UPLOAD_PROCESSING_STATUS.put(fileName, "This file is empty");
-				}else {
-				  try {
-	                  
-	                  List<LinkedHashMap<String, String>> allRecords = readDataLineByLine(file.getCanonicalPath(),fileName);
-	                  ValidatedData data = validateAllRecords(allRecords,fileName);
+			if (file.isFile() && fileName.endsWith(".csv")) {
+				log.info("Validating file : " + fileName + " Size >>>>" + file.length());
 
-	                    if (data.validRecords.size() > 0) {
-	                        validFileCounter++;
-	                        log.info("File {} have {} valid records", fileName, data.validRecords.size());
-	                    }
-	                    if (data.invalidRecords.size() > 0) {
-	                        log.info("File {} have {} invalid records", fileName, data.invalidRecords.size());
-	                        invalidFileCounter++;
-	                    }
-	                    writeCSV(fileName, data.validRecords, true);
-	                    writeCSV(fileName, data.invalidRecords, false);
-	                    if(data.validRecords.isEmpty() &&  data.invalidRecords.isEmpty()) {
-	                      Application.UPLOAD_PROCESSING_STATUS.put(fileName, "File had not any records after validation may be special character in file or format issue");    
-	                    }
-	                } catch (Exception e) {
-	                  Application.UPLOAD_PROCESSING_STATUS.put(fileName, "Error while processing file");
-	                }
+				if (file.length() == 0) {
+					Application.APP_CONFIG.getUploadProcessingStatus().put(fileName, "This file is empty");
+				} else {
+					try {
+
+						List<LinkedHashMap<String, String>> allRecords = readDataLineByLine(file.getCanonicalPath(),
+								fileName);
+						ValidatedData data = validateAllRecords(allRecords, fileName);
+
+						if (data.validRecords.size() > 0) {
+							validFileCounter++;
+							log.info("File {} have {} valid records", fileName, data.validRecords.size());
+						}
+						if (data.invalidRecords.size() > 0) {
+							log.info("File {} have {} invalid records", fileName, data.invalidRecords.size());
+							invalidFileCounter++;
+						}
+						writeCSV(fileName, data.validRecords, true);
+						writeCSV(fileName, data.invalidRecords, false);
+						if (data.validRecords.isEmpty() && data.invalidRecords.isEmpty()) {
+							Application.APP_CONFIG.getUploadProcessingStatus().put(fileName,
+									"File had not any records after validation may be special character in file or format issue or file is empty");
+						}
+						if (data.validRecords.isEmpty() && data.invalidRecords.size() > 0) {
+							Application.APP_CONFIG.getUploadProcessingStatus().put(fileName,
+									"File had not any records after validation check email");
+						}
+
+					} catch (Exception e) {
+						Application.APP_CONFIG.getUploadProcessingStatus().put(fileName, "Error while processing file");
+					}
 				}
-				
 
 			}
 		}
@@ -99,7 +101,7 @@ public class FileValidator {
 	 * Read data line by line.
 	 *
 	 * @param fileNameWithPath the file
-	 * @param fileName 
+	 * @param fileName
 	 * @return the list
 	 */
 	public static List<LinkedHashMap<String, String>> readDataLineByLine(String fileNameWithPath, String fileName) {
@@ -140,7 +142,7 @@ public class FileValidator {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			Application.UPLOAD_PROCESSING_STATUS.put(fileName, "Error while reading file"+e.getMessage());
+			Application.APP_CONFIG.getUploadProcessingStatus().put(fileName, "Error while reading file" + e.getMessage());
 		}
 		return allRecords;
 	}
@@ -149,10 +151,10 @@ public class FileValidator {
 	 * Validate all records.
 	 *
 	 * @param allRecords the all records
-	 * @param fileName the file name
+	 * @param fileName   the file name
 	 * @return the validated data
 	 */
-	public ValidatedData validateAllRecords(List<LinkedHashMap<String, String>> allRecords,String fileName) {
+	public ValidatedData validateAllRecords(List<LinkedHashMap<String, String>> allRecords, String fileName) {
 
 		if (skipValidation) {
 			return new ValidatedData(allRecords, new ArrayList<LinkedHashMap<String, String>>());
@@ -166,9 +168,9 @@ public class FileValidator {
 			LinkedHashMap<String, String> valid = new LinkedHashMap<>();
 			LinkedHashMap<String, String> inValid = new LinkedHashMap<>();
 			for (int j = 0; j < allRecords.get(i).size(); j++) {
-			    
+
 				String vencode = allRecords.get(i).getOrDefault(VEN_CODE, "");
-                if (vencode.isEmpty()) {
+				if (vencode.isEmpty()) {
 					inValid = allRecords.get(i);
 					inValid.put(MESSAGE, "Invalid VenCode");
 					invalidRecords.add(inValid);
@@ -177,8 +179,7 @@ public class FileValidator {
 
 				// Invoice number must not blank and should not have more than 17 chars
 				String invNum = allRecords.get(i).getOrDefault(INV_NUM, "");
-                if (invNum.isBlank()
-						|| invNum.length() > 17) {
+				if (invNum.isBlank() || invNum.length() > 17) {
 					inValid = allRecords.get(i);
 					inValid.put(MESSAGE, "Invalid InvNum");
 					invalidRecords.add(inValid);
@@ -211,15 +212,13 @@ public class FileValidator {
 				int monthValue = now.getMonthValue();
 				String month = String.valueOf(monthValue);
 				if ((allRecords.get(i).getOrDefault(FISCAL_MONTH, "").matches(month))
-						|| (allRecords.get(i).getOrDefault(FISCAL_MONTH, "")
-								.matches(String.valueOf(monthValue - 1)))) {
+						|| (allRecords.get(i).getOrDefault(FISCAL_MONTH, "").matches(String.valueOf(monthValue - 1)))) {
 
 				} else {
 					allRecords.get(i).replace(FISCAL_MONTH, month);
 				}
 
-				if (allRecords.get(i).get(FISCAL_YEAR).matches(String.valueOf(year - 1))
-						&& (monthValue == 1)) {
+				if (allRecords.get(i).get(FISCAL_YEAR).matches(String.valueOf(year - 1)) && (monthValue == 1)) {
 					if (allRecords.get(i).get(FISCAL_MONTH).matches(month)
 							|| allRecords.get(i).get(FISCAL_MONTH).matches("12")) {
 					} else {
@@ -249,10 +248,12 @@ public class FileValidator {
 					invalidRecords.add(inValid);
 					continue label;
 				}
-				// Line description not allowed in upload file so we are replacing in file and email will be sent with all line desc
-				String lineDescription = allRecords.get(i).getOrDefault(LINE_DESCRIPTION,"");
-                if (!lineDescription.isBlank()) {
-					Application.LINE_DESC_FILE.computeIfAbsent(fileName, k -> new ArrayList<>()).add("<tr><td>"+vencode+"</td><td>"+invNum+"</td><td>"+lineDescription+"</td></tr>");
+				// Line description not allowed in upload file so we are replacing in file and
+				// email will be sent with all line desc
+				String lineDescription = allRecords.get(i).getOrDefault(LINE_DESCRIPTION, "");
+				if (!lineDescription.isBlank()) {
+					Application.APP_CONFIG.getLineDescriptionFiles().computeIfAbsent(fileName, k -> new ArrayList<>()).add(
+							"<tr><td>" + vencode + "</td><td>" + invNum + "</td><td>" + lineDescription + "</td></tr>");
 					allRecords.get(i).replace(LINE_DESCRIPTION, "");
 				}
 				valid = allRecords.get(i);
@@ -272,7 +273,7 @@ public class FileValidator {
 		/**
 		 * Instantiates a new validated data.
 		 *
-		 * @param validRecords the valid records
+		 * @param validRecords   the valid records
 		 * @param invalidRecords the invalid records
 		 */
 		public ValidatedData(List<LinkedHashMap<String, String>> validRecords,
@@ -285,13 +286,13 @@ public class FileValidator {
 	/**
 	 * Write CSV.
 	 *
-	 * @param fileName the file name
-	 * @param records the records
+	 * @param fileName  the file name
+	 * @param records   the records
 	 * @param validData the valid data
 	 */
 	public static void writeCSV(String fileName, List<LinkedHashMap<String, String>> records, boolean validData) {
-		String filePath = (validData ? Application.CURRENT_HOUR_FOLDER_VALID_FILES
-				: Application.CURRENT_HOUR_FOLDER_IN_VALID_FILES) + "//" + fileName;
+		String filePath = (validData ? Application.APP_CONFIG.getCurrentHourFolderValidFiles()
+				: Application.APP_CONFIG.getCurrentHourFolderInValidFiles()) + "//" + fileName; //CURRENT_HOUR_FOLDER_IN_VALID_FILES
 		String message = validData ? "Valid records are empty" : "Invalid records are empty";
 
 		if (CollectionUtils.isEmpty(records)) {
@@ -301,7 +302,8 @@ public class FileValidator {
 			try {
 				createFile(filePath);
 				FileWriter outputfile = new FileWriter(filePath);
-				CSVWriter writer =new CSVWriter(outputfile, ',',CSVWriter.NO_QUOTE_CHARACTER,CSVWriter.DEFAULT_ESCAPE_CHARACTER,CSVWriter.DEFAULT_LINE_END);
+				CSVWriter writer = new CSVWriter(outputfile, ',', CSVWriter.NO_QUOTE_CHARACTER,
+						CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END);
 				String[] data = records.get(0).keySet().toArray(new String[0]);
 				writer.writeNext(data);
 				for (int i = 0; i < records.size(); i++) {
@@ -313,7 +315,8 @@ public class FileValidator {
 			} catch (Exception e) {
 				log.info("Error while writng CSV file in FileValidator");
 				e.printStackTrace();
-				Application.UPLOAD_PROCESSING_STATUS.put(fileName, "Error while writng CSV file in FileValidator "+e.getMessage());
+				Application.APP_CONFIG.getUploadProcessingStatus().put(fileName,
+						"Error while writng CSV file in FileValidator " + e.getMessage());
 			}
 		}
 	}

@@ -22,9 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImportFile extends ImportFileOr {
 	WebDriver driver;
-	private static final String URL = "https://www25.pointclickcare.com/home/home.jsp?ESOLnewlogin=N";
-	private static final String ELEMENT = "//*[@id=\"pccFacLink\"]";
-
 	/**
 	 * Instantiates a new import file.
 	 *
@@ -52,7 +49,7 @@ public class ImportFile extends ImportFileOr {
 //		    a.keyRelease(KeyEvent.VK_N);
 		    
 		    
-		uname.sendKeys(Application.configProps.getProperty("pcc.website.username"));
+		uname.sendKeys(Application.APP_CONFIG.getConfigProps().getProperty("pcc.website.username"));
 		Thread.sleep(2000);
 		nextbtn.click();
 		Thread.sleep(2000);
@@ -64,7 +61,7 @@ public class ImportFile extends ImportFileOr {
 	 * @throws InterruptedException the interrupted exception
 	 */
 	public void password() throws InterruptedException {
-		pwd.sendKeys(Application.configProps.getProperty("pcc.website.password"));
+		pwd.sendKeys(Application.APP_CONFIG.getConfigProps().getProperty("pcc.website.password"));
 		Thread.sleep(2000);
 	}
 
@@ -143,13 +140,13 @@ public class ImportFile extends ImportFileOr {
 					String communityCode = csvFileNameArr[2];
 					log.info("Changing community code for  " + communityCode);
 
-					if (Application.HDG_PCC_CODE_MAP.containsKey(communityCode)) {
+					if (Application.APP_CONFIG.getHdgPccCodeMap().containsKey(communityCode)) {
 
-						String searchText = Application.HDG_PCC_CODE_MAP.getProperty(communityCode);
+						String searchText =Application.APP_CONFIG.getHdgPccCodeMap().getProperty(communityCode);
 						String xpathExpression = "//a[text()='" + searchText + "']";
 
-						driver.get(URL);
-						driver.findElement(By.xpath(ELEMENT)).click();
+						driver.get("https://www25.pointclickcare.com/home/home.jsp?ESOLnewlogin=N");
+						driver.findElement(By.xpath("//*[@id=\"pccFacLink\"]")).click();
 						Thread.sleep(2000);
 						driver.findElement(By.id("facSearchFilter")).sendKeys(searchText);
 						Thread.sleep(2000);
@@ -159,14 +156,14 @@ public class ImportFile extends ImportFileOr {
 						Thread.sleep(6000);
 						return true;
 					} else {
-						Application.UPLOAD_PROCESSING_STATUS.put(csvFileName,
+						Application.APP_CONFIG.getUploadProcessingStatus().put(csvFileName,
 								"Community code not found in configuration(hdg-pcc-code-mapping.properties)");
 					}
 				}
 			}
 		} catch (Exception e) {
 			log.info("The file {} contains invalid commmunity code in name", csvFileName);
-			Application.UPLOAD_PROCESSING_STATUS.put(csvFileName,
+			Application.APP_CONFIG.getUploadProcessingStatus().put(csvFileName,
 					"Error while setting community code, check hdg-pcc-code-mapping.properties and pcc web-site");
 			// EmailConfig.invalidCommunityCodeInFileName(csvFileName);
 		}
@@ -200,7 +197,7 @@ public class ImportFile extends ImportFileOr {
 		log.info(" Error report PDF " + pdfName + " exc_repo.getAccessibleName() >>> " + exc_repo.getAccessibleName());
 
 		if (exc_repo.getAccessibleName().equalsIgnoreCase("Exceptions Report")) {
-			Application.UPLOAD_PROCESSING_STATUS.put(fileName, "Exception report generated");
+			Application.APP_CONFIG.getUploadProcessingStatus().put(fileName, "Exception report generated");
 			exc_repo.click();
 			Thread.sleep(10000);
 			
@@ -214,7 +211,7 @@ public class ImportFile extends ImportFileOr {
 
 			// Rename file (or directory)
 			boolean success = file.renameTo(file2);
-			Application.EXCEPTION_REPORTS.add(pdfName);
+			Application.APP_CONFIG.getExceptionReports().add(pdfName);
 			Thread.sleep(2000);
 			//EmailConfig.sendExceptionReport(pdfName, csvFileNameWithPath, fileName);
 			//log.info("Attached"+pdfName);
@@ -227,7 +224,7 @@ public class ImportFile extends ImportFileOr {
 
 		} else {
 			log.info("Unknown button " + exc_repo.getAccessibleName());
-			Application.UPLOAD_PROCESSING_STATUS.put(csvFileNameWithPath,
+			Application.APP_CONFIG.getUploadProcessingStatus().put(csvFileNameWithPath,
 					"Unknown button in UI :  " + exc_repo.getAccessibleName());
 		}
 
@@ -254,13 +251,13 @@ public class ImportFile extends ImportFileOr {
 			if (alertText != null && alertText.toLowerCase().contains("duplicate invoice found")) {
 				log.info(csvFileName + " : Status : Duplicate invoice message : " + alertText);
 				// EmailConfig.sendDuplicateInvoiceEmail(csvFileNameWithPath,csvFileName,alertText);
-				Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status : " + alertText);
+				Application.APP_CONFIG.getUploadProcessingStatus().put(csvFileName, "Status : " + alertText);
 			} else if (alertText != null && alertText.toLowerCase().contains("commit complete")) {
 				log.info(csvFileName + " : Status : Commit Complete message : " + alertText);
-				Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status :" + alertText);
+				Application.APP_CONFIG.getUploadProcessingStatus().put(csvFileName, "Status :" + alertText);
 			} else {
 				log.info(csvFileName + "  Unknown error: " + alertText);
-				Application.UPLOAD_PROCESSING_STATUS.put(csvFileName, "Status : " + alertText);
+				Application.APP_CONFIG.getUploadProcessingStatus().put(csvFileName, "Status : " + alertText);
 			}
 
 			alert.accept();
@@ -270,7 +267,7 @@ public class ImportFile extends ImportFileOr {
 
 		} catch (Exception e) {
 			log.info("Catch block" + e.getMessage());
-			Application.UPLOAD_PROCESSING_STATUS.put(csvFileName,
+			Application.APP_CONFIG.getUploadProcessingStatus().put(csvFileName,
 					"Status(Exception) : Please verify file in PCC as commit message didn't observed");
 		}
 	}
