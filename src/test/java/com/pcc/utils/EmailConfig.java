@@ -256,5 +256,13 @@ public class EmailConfig {
   private static final String EMAIL_TABLE_PROCESSING_STATUS =
       "<table border='1' style='border-collapse:collapse;border:1px solid;' cellpadding='3'><thead><tr><th>File name</th><th>Processing status</th></tr></thead>";
 
+public static void sendExceptionReport(String pdfName, String csvFileNameWithPath, String fileName) {
+	// TODO Auto-generated method stub
+	
+}
+
+
+
+
 
 }

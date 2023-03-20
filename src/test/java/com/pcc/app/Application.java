@@ -10,24 +10,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
+
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
 import com.pcc.utils.EmailConfig;
 import com.pcc.utils.FileValidator;
 import com.pcc.utils.FtpConnection;
 import com.pcc.utils.ImportFile;
+
 import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
 
@@ -103,13 +107,14 @@ public class Application {
 
     ERROR_REPORT_PATH = APP_BASE_PATH + "//errorfiles//" + CURRENT_HOUR;
     
-    WebDriverManager.chromedriver().setup();
-    HashMap<String, Object> chromePrefs = new HashMap<String, Object>();
-    chromePrefs.put("profile.default_content_settings.popups", 0);
-    chromePrefs.put("download.default_directory", ERROR_REPORT_PATH);
-    option.setExperimentalOption("prefs", chromePrefs);
-    option.addArguments("--remote-allow-origins=*");
-
+    WebDriverManager.edgedriver().setup();
+//    HashMap<String, Object> chromePrefs = new HashMap<String, Object>();
+//    chromePrefs.put("profile.default_content_settings.popups", 0);
+//    chromePrefs.put("download.default_directory", ERROR_REPORT_PATH);
+//    option.setExperimentalOption("prefs", chromePrefs);
+//    option.addArguments("--remote-allow-origins=*");
+    //option.addArguments("headless");
+	
     log.info("Processing for folder > " + CURRENT_HOUR_FOLDER);
     createDir(ERROR_REPORT_PATH);
     prepareCommunityCodeMap();
@@ -125,9 +130,15 @@ public class Application {
         if (validator.hashValidFiles() > 0) {
           log.info("Opening chrome");
           anyValidFile = true;
-          driver = new ChromeDriver(option);
+          driver =new EdgeDriver();
           driver.manage().window().maximize();
+          Map<String, Object> prefs = new HashMap<String, Object>();
+          prefs.put("download.default_directory",
+          System.getProperty("user.dir") + File.separator + "externalFiles" + File.separator + "downloadFiles");
+          EdgeOptions op=new EdgeOptions();
+          op.setExperimentalOption("prefs", prefs);
           driver.get(configProps.getProperty("pcc.website"));// "https://www25.pointclickcare.com/home/login.jsp?ESOLGuid=40_1672328090402"
+        log.info("configProps.getProperty(\"pcc.website\") " +configProps.getProperty("pcc.website"));
           Thread.sleep(2000);
         }
 
@@ -176,8 +187,8 @@ public class Application {
       attachFiles = false;
     } else {
       if (driver == null) {
-        log.info("Chrome driver is null");
-        processingStatus = "(Chrome driver is null) File processing finished for hour " + CURRENT_HOUR;
+        log.info("Edge driver is null");
+        processingStatus = "(Edge driver is null) File processing finished for hour " + CURRENT_HOUR;
       } else {
         ImportFile imf = new ImportFile(driver);
         imf.username();
@@ -232,7 +243,7 @@ public class Application {
   public void DryRun() throws Exception {
 
     driver.manage().window().maximize();
-    driver.get(configProps.getProperty("pcc.website"));// "https://www25.pointclickcare.com/home/login.jsp?ESOLGuid=40_1672328090402"
+    //driver.get(configProps.getProperty("pcc.website"));// "https://www25.pointclickcare.com/home/login.jsp?ESOLGuid=40_1672328090402"
     Thread.sleep(2000);
 
     ImportFile imf = new ImportFile(driver);

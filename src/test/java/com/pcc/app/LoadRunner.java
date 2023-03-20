@@ -39,13 +39,15 @@ public class LoadRunner {
           .withIdentity("CSVScheduler", "CSVSchedulerGroup").build();
 
       Trigger csvTrigger = TriggerBuilder.newTrigger().withIdentity("CSVScheduler", "group1")
-          .withSchedule(CronScheduleBuilder.cronSchedule(args[0])).build();
+          .withSchedule(CronScheduleBuilder.cronSchedule(CRON_SCHEDULE)).build();
 
       Scheduler csvSchedule;
       try {
         csvSchedule = new StdSchedulerFactory().getScheduler();
         csvSchedule.start();
         csvSchedule.scheduleJob(csvJob, csvTrigger);
+        csvTrigger.getNextFireTime();
+        log.info("Next scheduler will run on : "+csvTrigger.getNextFireTime());
       } catch (SchedulerException e) {
         e.printStackTrace();
         log.info("Error message in LoadRunner" + e.getMessage());

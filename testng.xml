@@ -3,7 +3,7 @@
 <suite name="Suite">
 	<test thread-count="1" name="Test">
 		<classes>
-			<class name="com.pcc.app.Application" />
+			<class name="com.pcc.app.LoadRunner" />
 		</classes>
 	</test>
 </suite> 
