@@ -65,8 +65,7 @@ public class Application {
 		String APP_BASE_PATH = System.getenv("PCC_BASE_PATH");
 
 		APP_CONFIG.setConfigProps(configProps);
-		APP_CONFIG.setEmailSender(configProps.getProperty("pcc.mail.sender.password"));
-
+		
 		String[] receiverEmails = configProps.getProperty("pcc.mail.receivers.emailids").split(",");
 
 		List<InternetAddress> EMAIL_RECEIVER = new ArrayList<>();
@@ -114,7 +113,7 @@ public class Application {
 				validator.validateFiles();
 
 				if (validator.hashValidFiles() > 0) {
-					log.info("Opening chrome");
+					log.info("Opening browser");
 
 					APP_CONFIG.setAnyValidFile(true);
 					driver = new EdgeDriver();

@@ -2,20 +2,20 @@
 <testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
   <reporter-output>
   </reporter-output>
-  <suite started-at="2023-03-19T18:41:29 UTC" name="Default suite" finished-at="2023-03-19T18:42:56 UTC" duration-ms="87227">
+  <suite started-at="2023-03-20T14:15:34 UTC" name="Default suite" finished-at="2023-03-20T14:15:53 UTC" duration-ms="18984">
     <groups>
     </groups>
-    <test started-at="2023-03-19T18:41:29 UTC" name="Default test" finished-at="2023-03-19T18:42:56 UTC" duration-ms="87227">
+    <test started-at="2023-03-20T14:15:34 UTC" name="Default test" finished-at="2023-03-20T14:15:53 UTC" duration-ms="18984">
       <class name="com.pcc.app.Application">
-        <test-method is-config="true" signature="setup()[pri:0, instance:com.pcc.app.Application@470734c3]" started-at="2023-03-19T18:41:29 UTC" name="setup" finished-at="2023-03-19T18:41:39 UTC" duration-ms="9734" status="PASS">
+        <test-method is-config="true" signature="setup()[pri:0, instance:com.pcc.app.Application@791f145a]" started-at="2023-03-20T14:15:34 UTC" name="setup" finished-at="2023-03-20T14:15:35 UTC" duration-ms="829" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setup -->
-        <test-method signature="Import_File()[pri:0, instance:com.pcc.app.Application@470734c3]" started-at="2023-03-19T18:41:39 UTC" name="Import_File" finished-at="2023-03-19T18:42:56 UTC" duration-ms="77434" status="PASS">
+        <test-method signature="Import_File()[pri:0, instance:com.pcc.app.Application@791f145a]" started-at="2023-03-20T14:15:35 UTC" name="Import_File" finished-at="2023-03-20T14:15:53 UTC" duration-ms="18096" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- Import_File -->
-        <test-method is-config="true" signature="closeBrowser()[pri:0, instance:com.pcc.app.Application@470734c3]" started-at="2023-03-19T18:42:56 UTC" name="closeBrowser" finished-at="2023-03-19T18:42:56 UTC" duration-ms="9" status="PASS">
+        <test-method is-config="true" signature="closeBrowser()[pri:0, instance:com.pcc.app.Application@791f145a]" started-at="2023-03-20T14:15:53 UTC" name="closeBrowser" finished-at="2023-03-20T14:15:53 UTC" duration-ms="1" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- closeBrowser -->

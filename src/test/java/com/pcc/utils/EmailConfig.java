@@ -38,7 +38,7 @@ public class EmailConfig {
 
 		return Session.getDefaultInstance(prop, new javax.mail.Authenticator() {
 			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-				return new javax.mail.PasswordAuthentication(Application.APP_CONFIG.getEmailSender(),
+				return new javax.mail.PasswordAuthentication(Application.APP_CONFIG.getConfigProps().getProperty("pcc.mail.sender.email"),
 						Application.APP_CONFIG.getConfigProps().getProperty("pcc.mail.sender.password"));
 			}
 		});
@@ -239,7 +239,8 @@ public class EmailConfig {
 			Transport.send(message);
 			log.info("Email sending completed");
 		} catch (MessagingException e) {
-			log.info("Error in email sending");
+			e.printStackTrace();
+			log.info("Error in email sending"+e.getMessage());
 			throw new RuntimeException(e);
 		}
 	}

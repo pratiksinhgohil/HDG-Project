@@ -6,7 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -168,30 +167,37 @@ public class FileValidator {
 			LinkedHashMap<String, String> valid = new LinkedHashMap<>();
 			LinkedHashMap<String, String> inValid = new LinkedHashMap<>();
 			for (int j = 0; j < allRecords.get(i).size(); j++) {
-
+				boolean isAnyFieldInvalid = false;
+				StringBuffer invalidRecordMessage = new StringBuffer();
 				String vencode = allRecords.get(i).getOrDefault(VEN_CODE, "");
 				if (vencode.isEmpty()) {
-					inValid = allRecords.get(i);
-					inValid.put(MESSAGE, "Invalid VenCode");
-					invalidRecords.add(inValid);
-					continue label;
+					//inValid = allRecords.get(i);
+					//inValid.put(MESSAGE, "Invalid VenCode ");
+					//invalidRecords.add(inValid);
+					//continue label;
+					invalidRecordMessage.append("Invalid VenCode ");
+					isAnyFieldInvalid = true;
 				}
 
 				// Invoice number must not blank and should not have more than 17 chars
 				String invNum = allRecords.get(i).getOrDefault(INV_NUM, "");
 				if (invNum.isBlank() || invNum.length() > 17) {
-					inValid = allRecords.get(i);
-					inValid.put(MESSAGE, "Invalid InvNum");
-					invalidRecords.add(inValid);
-					continue label;
+					//inValid = allRecords.get(i);
+					//inValid.put(MESSAGE, inValid.getOrDefault(MESSAGE, "")+" Invalid InvNum ");
+					//invalidRecords.add(inValid);
+					//continue label;
+					invalidRecordMessage.append(" Invalid InvNum ");
+					isAnyFieldInvalid = true;
 				}
 
 				// Invoice date must not empty
 				if (allRecords.get(i).getOrDefault(INV_DATE, "").isBlank()) {
-					inValid = allRecords.get(i);
-					inValid.put(MESSAGE, "Invalid InvDate");
-					invalidRecords.add(inValid);
-					continue label;
+					//inValid = allRecords.get(i);
+					//inValid.put(MESSAGE,inValid.getOrDefault(MESSAGE, "")+ "Invalid InvDate ");
+					//invalidRecords.add(inValid);
+					//continue label;
+					invalidRecordMessage.append(" Invalid InvDate  ");
+					isAnyFieldInvalid = true;
 				}
 
 				// FISCAL_YEAR must not be null or empty and should be valid
@@ -228,23 +234,35 @@ public class FileValidator {
 
 				// The TransactionAmount must not empty
 				if (allRecords.get(i).getOrDefault(TRANSACTION_AMOUNT, "").isBlank()) {
-					inValid = allRecords.get(i);
-					inValid.put(MESSAGE, "Invalid TransactionAmount");
-					invalidRecords.add(inValid);
-					continue label;
+					//inValid = allRecords.get(i);
+					//inValid.put(MESSAGE, inValid.getOrDefault(MESSAGE, "")+"Invalid TransactionAmount ");
+					//invalidRecords.add(inValid);
+					//continue label;
+					invalidRecordMessage.append(" Invalid TransactionAmount ");
+					isAnyFieldInvalid = true;
 				}
 
 				// InvoiceAmount is not allowed as blank
 				if (allRecords.get(i).getOrDefault(INVOICE_AMOUNT, "").isBlank()) {
-					inValid = allRecords.get(i);
-					inValid.put(MESSAGE, "Invalid InvNum");
-					invalidRecords.add(inValid);
-					continue label;
+					//inValid = allRecords.get(i);
+					//inValid.put(MESSAGE, inValid.getOrDefault(MESSAGE, "")+"Invalid InvNum ");
+					//invalidRecords.add(inValid);
+					//continue label;
+					invalidRecordMessage.append(" Invalid InvoiceAmount ");
+					isAnyFieldInvalid = true;
 				}
 				// AccountNum is not allowed as blank
 				if (allRecords.get(i).getOrDefault(ACCOUNT_NUM, "").isBlank()) {
+					//inValid = allRecords.get(i);
+					//inValid.put(MESSAGE,inValid.getOrDefault(MESSAGE, "")+ "Invalid AccountNum ");
+					//invalidRecords.add(inValid);
+					//continue label;
+					invalidRecordMessage.append(" Invalid AccountNum ");
+					isAnyFieldInvalid = true;
+				}
+				if(isAnyFieldInvalid) {
 					inValid = allRecords.get(i);
-					inValid.put(MESSAGE, "Invalid AccountNum");
+					inValid.put(MESSAGE,invalidRecordMessage.toString());
 					invalidRecords.add(inValid);
 					continue label;
 				}
@@ -256,6 +274,7 @@ public class FileValidator {
 							"<tr><td>" + vencode + "</td><td>" + invNum + "</td><td>" + lineDescription + "</td></tr>");
 					allRecords.get(i).replace(LINE_DESCRIPTION, "");
 				}
+				
 				valid = allRecords.get(i);
 			}
 			validRecords.add(valid);

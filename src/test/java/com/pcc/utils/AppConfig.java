@@ -22,7 +22,7 @@ public class AppConfig {
 	private String appBasePath;
 	private String errorReportFilesPath;
 	private boolean anyValidFile;
-	private String emailSender;
+	
 	private List<InternetAddress> emailReceiver;
 	private ConcurrentHashMap<String, List<String>> lineDescriptionFiles = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, String> uploadProcessingStatus = new ConcurrentHashMap<>();
