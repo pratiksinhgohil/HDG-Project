@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.MessagingException;
@@ -74,34 +73,34 @@ public class Application {
 			EMAIL_RECEIVER.add(new InternetAddress(receivers));
 		}
 
-		String CURRENT_HOUR = CURRENT_TIME.getYear() + "//" + CURRENT_TIME.getMonth() + "//"
-				+ CURRENT_TIME.getDayOfMonth() + "//" + CURRENT_TIME.getHour();
+		String CURRENT_HOUR_MINUTE = CURRENT_TIME.getYear() + "//" + CURRENT_TIME.getMonth() + "//"
+				+ CURRENT_TIME.getDayOfMonth() + "//" + CURRENT_TIME.getHour() + "_"+CURRENT_TIME.getMinute();
 
-		String CURRENT_HOUR_FOLDER = APP_BASE_PATH + "//" + CURRENT_HOUR;
-		String CURRENT_HOUR_FOLDER_VALID_FILES = CURRENT_HOUR_FOLDER + "//valid";
-		String CURRENT_HOUR_FOLDER_IN_VALID_FILES = CURRENT_HOUR_FOLDER + "//invalid";
-		String ERROR_REPORT_PATH = APP_BASE_PATH + "//errorfiles//" + CURRENT_HOUR;
+		String CURRENT_PROCESSING_FOLDER = APP_BASE_PATH + "//" + CURRENT_HOUR_MINUTE;
+		String CURRENT_PROCESSING_VALID_FILES = CURRENT_PROCESSING_FOLDER + "//valid";
+		String CURRENT_PROCESSING_INVALID_FILES = CURRENT_PROCESSING_FOLDER + "//invalid";
+		String ERROR_REPORT_PATH = APP_BASE_PATH + "//errorfiles//" + CURRENT_HOUR_MINUTE;
 
 		WebDriverManager.edgedriver().setup();
 
 		APP_CONFIG.setEmailReceiver(EMAIL_RECEIVER);
-		APP_CONFIG.setCurrentHour(CURRENT_HOUR);
-		APP_CONFIG.setCurrentHourFolder(CURRENT_HOUR_FOLDER);
-		APP_CONFIG.setCurrentHourFolderValidFiles(CURRENT_HOUR_FOLDER_VALID_FILES);
-		APP_CONFIG.setCurrentHourFolderInValidFiles(CURRENT_HOUR_FOLDER_IN_VALID_FILES);
+		APP_CONFIG.setCurrentHour(CURRENT_HOUR_MINUTE);
+		APP_CONFIG.setCurrentHourFolder(CURRENT_PROCESSING_FOLDER);
+		APP_CONFIG.setCurrentHourFolderValidFiles(CURRENT_PROCESSING_VALID_FILES);
+		APP_CONFIG.setCurrentHourFolderInValidFiles(CURRENT_PROCESSING_INVALID_FILES);
 		APP_CONFIG.setErrorReportFilesPath(ERROR_REPORT_PATH);
 
 		log.info("Processing for folder > " + ERROR_REPORT_PATH);
 
-		createDir(CURRENT_HOUR_FOLDER);
-		createDir(CURRENT_HOUR_FOLDER_VALID_FILES);
-		createDir(CURRENT_HOUR_FOLDER_IN_VALID_FILES);
+		createDir(CURRENT_PROCESSING_FOLDER);
+		createDir(CURRENT_PROCESSING_VALID_FILES);
+		createDir(CURRENT_PROCESSING_INVALID_FILES);
 		createDir(ERROR_REPORT_PATH);
 
 		prepareCommunityCodeMap();
-		log.info("CURRENT_HOUR_FOLDER >> " + CURRENT_HOUR_FOLDER);
-		log.info("CURRENT_HOUR_FOLDER_VALID_FILES >> " + CURRENT_HOUR_FOLDER_VALID_FILES);
-		log.info("CURRENT_HOUR_FOLDER_IN_VALID_FILES >> " + CURRENT_HOUR_FOLDER_IN_VALID_FILES);
+		log.info("CURRENT_HOUR_FOLDER >> " + CURRENT_PROCESSING_FOLDER);
+		log.info("CURRENT_HOUR_FOLDER_VALID_FILES >> " + CURRENT_PROCESSING_VALID_FILES);
+		log.info("CURRENT_HOUR_FOLDER_IN_VALID_FILES >> " + CURRENT_PROCESSING_INVALID_FILES);
 		log.info("ERROR_REPORT_PATH >> " + ERROR_REPORT_PATH);
 
 		FtpConnection pccFTPConn = new FtpConnection();
@@ -116,13 +115,18 @@ public class Application {
 					log.info("Opening browser");
 
 					APP_CONFIG.setAnyValidFile(true);
-					driver = new EdgeDriver();
+					
+					EdgeOptions options = new EdgeOptions();
+					HashMap<String, Object> edgePrefs= new HashMap<>();
+					edgePrefs.put("profile.default_content_settings.popups", 0);
+					//edgePrefs.put("download.default_directory","D:\\PCC\\TempD");
+					System.out.println(ERROR_REPORT_PATH.replace("//", "\\\\"));
+					edgePrefs.put("download.default_directory",ERROR_REPORT_PATH.replace("//", "\\"));
+					
+					options.setExperimentalOption("prefs", edgePrefs);
+					driver = new EdgeDriver(options);
 					driver.manage().window().maximize();
-					Map<String, Object> prefs = new HashMap<String, Object>();
-					prefs.put("download.default_directory", System.getProperty("user.dir") + File.separator
-							+ "externalFiles" + File.separator + "downloadFiles");
-					EdgeOptions op = new EdgeOptions();
-					op.setExperimentalOption("prefs", prefs);
+					
 					driver.get(configProps.getProperty("pcc.website"));// "https://www25.pointclickcare.com/home/login.jsp?ESOLGuid=40_1672328090402"
 					log.info("configProps.getProperty(\"pcc.website\") " + configProps.getProperty("pcc.website"));
 					Thread.sleep(2000);
@@ -181,8 +185,7 @@ public class Application {
 				imf.username();
 				imf.password();
 				imf.submit();
-				// imf.hovermenu();
-				// imf.ac_pay();
+
 				log.info("Password entered");
 				File folder = new File(APP_CONFIG.getCurrentHourFolderValidFiles());// CURRENT_HOUR_FOLDER_VALID_FILES
 				File[] listOfFiles = folder.listFiles();

@@ -37,7 +37,7 @@ public class FtpConnection {
 		String server = Application.APP_CONFIG.getConfigProps().getProperty("pcc.ftp.host", ""); // "FTP.dssinetwork.com";
 		String user = Application.APP_CONFIG.getConfigProps().getProperty("pcc.ftp.username", "");// "HDG";
 		String pass = Application.APP_CONFIG.getConfigProps().getProperty("pcc.ftp.password", "");// "Ay48pMM";
-		
+
 		log.info("Connecting to FTP server {}", server);
 
 		try {
@@ -64,7 +64,8 @@ public class FtpConnection {
 	public int downloadFiles() {
 		log.info("Downloading files");
 		try {
-			String remotePath = Application.APP_CONFIG.getConfigProps().getProperty("pcc.ftp.remotepath", "//In//Test//");// "Ay48pMM";
+			String remotePath = Application.APP_CONFIG.getConfigProps().getProperty("pcc.ftp.remotepath",
+					"//In//Test//");// "Ay48pMM";
 
 			String[] remoteFiles = ftpClient.listNames(remotePath);
 
@@ -73,14 +74,17 @@ public class FtpConnection {
 				return 0;
 			}
 			int fileCounter = 0;
+			String goldencopy = remotePath + "/" + Application.APP_CONFIG.getCurrentHour().replace("//", "/");
+			ftpClient.makeDirectory(goldencopy);
 			for (String remoteFile : remoteFiles) {
 
 				if (remoteFile.endsWith(".csv")) {
-					String remoteFileToDelete = remotePath + "/" + remoteFile;
-					log.info("Remote file : " + remoteFileToDelete + " copying to "
+					String remoteFileSource = remotePath + "/" + remoteFile;
+					String remoteFileDestination = goldencopy + "/" + remoteFile;
+					log.info("Remote file : " + remoteFileSource + " copying to "
 							+ Application.APP_CONFIG.getCurrentHourFolder() + "//" + remoteFile);
 
-					InputStream readingStream = ftpClient.retrieveFileStream(remoteFileToDelete);
+					InputStream readingStream = ftpClient.retrieveFileStream(remoteFileSource);
 
 					File file = new File(Application.APP_CONFIG.getCurrentHourFolder() + "//" + remoteFile);
 					file.getParentFile().mkdirs();
@@ -111,8 +115,10 @@ public class FtpConnection {
 					readingStream.close();
 
 //					boolean deleteFile = true; 
-					boolean deleteFile = ftpClient.deleteFile(remoteFileToDelete);
-					log.info("Remote file {} delete status {}", remoteFileToDelete, deleteFile);
+					ftpClient.rename(remoteFileSource, remoteFileDestination);
+					//boolean deleteFile = ftpClient.deleteFile(remoteFileToDelete);
+
+					log.info("Remote file {} moved to {}", remoteFileSource, remoteFileDestination);
 
 					fileCounter++;
 				}

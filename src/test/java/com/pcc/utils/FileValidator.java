@@ -141,7 +141,8 @@ public class FileValidator {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			Application.APP_CONFIG.getUploadProcessingStatus().put(fileName, "Error while reading file" + e.getMessage());
+			Application.APP_CONFIG.getUploadProcessingStatus().put(fileName,
+					"Error while reading file" + e.getMessage());
 		}
 		return allRecords;
 	}
@@ -159,8 +160,13 @@ public class FileValidator {
 			return new ValidatedData(allRecords, new ArrayList<LinkedHashMap<String, String>>());
 		}
 
+		int fiscalMonthCutoff = Integer
+				.valueOf(Application.APP_CONFIG.getConfigProps().getProperty("fiscal.cutoff.day", "15")).intValue();
 		LocalDateTime now = LocalDateTime.now();
 		int year = now.getYear();
+		int monthValue = now.getMonthValue();
+		boolean isLastMonthCutoffOver = fiscalMonthCutoff < now.getDayOfMonth();
+		String month = String.valueOf(monthValue);
 		List<LinkedHashMap<String, String>> validRecords = new ArrayList<>();
 		List<LinkedHashMap<String, String>> invalidRecords = new ArrayList<>();
 		label: for (int i = 0; i < allRecords.size(); i++) {
@@ -171,10 +177,6 @@ public class FileValidator {
 				StringBuffer invalidRecordMessage = new StringBuffer();
 				String vencode = allRecords.get(i).getOrDefault(VEN_CODE, "");
 				if (vencode.isEmpty()) {
-					//inValid = allRecords.get(i);
-					//inValid.put(MESSAGE, "Invalid VenCode ");
-					//invalidRecords.add(inValid);
-					//continue label;
 					invalidRecordMessage.append("Invalid VenCode ");
 					isAnyFieldInvalid = true;
 				}
@@ -182,99 +184,66 @@ public class FileValidator {
 				// Invoice number must not blank and should not have more than 17 chars
 				String invNum = allRecords.get(i).getOrDefault(INV_NUM, "");
 				if (invNum.isBlank() || invNum.length() > 17) {
-					//inValid = allRecords.get(i);
-					//inValid.put(MESSAGE, inValid.getOrDefault(MESSAGE, "")+" Invalid InvNum ");
-					//invalidRecords.add(inValid);
-					//continue label;
-					invalidRecordMessage.append(" Invalid InvNum ");
+					 invalidRecordMessage.append(" Invalid InvNum ");
 					isAnyFieldInvalid = true;
 				}
 
 				// Invoice date must not empty
 				if (allRecords.get(i).getOrDefault(INV_DATE, "").isBlank()) {
-					//inValid = allRecords.get(i);
-					//inValid.put(MESSAGE,inValid.getOrDefault(MESSAGE, "")+ "Invalid InvDate ");
-					//invalidRecords.add(inValid);
-					//continue label;
-					invalidRecordMessage.append(" Invalid InvDate  ");
+				    invalidRecordMessage.append(" Invalid InvDate  ");
 					isAnyFieldInvalid = true;
 				}
+ 
 
-				// FISCAL_YEAR must not be null or empty and should be valid
-
-				if (allRecords.get(i).getOrDefault(FISCAL_YEAR, "").isEmpty()) {
-					allRecords.get(i).replace(FISCAL_YEAR, String.valueOf(year));
-				}
-				if (!allRecords.get(i).getOrDefault(FISCAL_YEAR, "").matches(String.valueOf(year))) {
-					if (allRecords.get(i).get(FISCAL_MONTH).matches("1")) {
-						allRecords.get(i).replace(FISCAL_YEAR, String.valueOf(year - 1));
-					} else {
-						allRecords.get(i).replace(FISCAL_YEAR, String.valueOf(year));
-					}
-				}
-
-				// FISCAL_MONTH Should be current or previous month and must not be null or
-				// empty
-				int monthValue = now.getMonthValue();
-				String month = String.valueOf(monthValue);
-				if ((allRecords.get(i).getOrDefault(FISCAL_MONTH, "").matches(month))
-						|| (allRecords.get(i).getOrDefault(FISCAL_MONTH, "").matches(String.valueOf(monthValue - 1)))) {
-
-				} else {
-					allRecords.get(i).replace(FISCAL_MONTH, month);
-				}
-
-				if (allRecords.get(i).get(FISCAL_YEAR).matches(String.valueOf(year - 1)) && (monthValue == 1)) {
-					if (allRecords.get(i).get(FISCAL_MONTH).matches(month)
-							|| allRecords.get(i).get(FISCAL_MONTH).matches("12")) {
-					} else {
-						allRecords.get(i).replace(FISCAL_YEAR, String.valueOf(year));
-					}
-				}
+				String fiscalMonth = allRecords.get(i).getOrDefault(FISCAL_MONTH, "0");
 
 				// The TransactionAmount must not empty
 				if (allRecords.get(i).getOrDefault(TRANSACTION_AMOUNT, "").isBlank()) {
-					//inValid = allRecords.get(i);
-					//inValid.put(MESSAGE, inValid.getOrDefault(MESSAGE, "")+"Invalid TransactionAmount ");
-					//invalidRecords.add(inValid);
-					//continue label;
 					invalidRecordMessage.append(" Invalid TransactionAmount ");
 					isAnyFieldInvalid = true;
 				}
 
 				// InvoiceAmount is not allowed as blank
 				if (allRecords.get(i).getOrDefault(INVOICE_AMOUNT, "").isBlank()) {
-					//inValid = allRecords.get(i);
-					//inValid.put(MESSAGE, inValid.getOrDefault(MESSAGE, "")+"Invalid InvNum ");
-					//invalidRecords.add(inValid);
-					//continue label;
 					invalidRecordMessage.append(" Invalid InvoiceAmount ");
 					isAnyFieldInvalid = true;
 				}
 				// AccountNum is not allowed as blank
 				if (allRecords.get(i).getOrDefault(ACCOUNT_NUM, "").isBlank()) {
-					//inValid = allRecords.get(i);
-					//inValid.put(MESSAGE,inValid.getOrDefault(MESSAGE, "")+ "Invalid AccountNum ");
-					//invalidRecords.add(inValid);
-					//continue label;
 					invalidRecordMessage.append(" Invalid AccountNum ");
 					isAnyFieldInvalid = true;
 				}
-				if(isAnyFieldInvalid) {
+				if (isAnyFieldInvalid) {
 					inValid = allRecords.get(i);
-					inValid.put(MESSAGE,invalidRecordMessage.toString());
+					inValid.put(MESSAGE, invalidRecordMessage.toString());
 					invalidRecords.add(inValid);
 					continue label;
+				} else {
+					if (allRecords.get(i).getOrDefault(FISCAL_YEAR,String.valueOf(year)).matches(String.valueOf(year - 1))) {
+						if (isLastMonthCutoffOver || Integer.valueOf(fiscalMonth).intValue() <= 11) {
+							allRecords.get(i).replace(FISCAL_MONTH, month);
+							allRecords.get(i).replace(FISCAL_YEAR, String.valueOf(year));
+						}
+					} else {
+						if ((fiscalMonth.matches(String.valueOf(monthValue - 1)))) {
+							if (isLastMonthCutoffOver) {
+								allRecords.get(i).replace(FISCAL_MONTH, month);
+							}
+						} else {
+							allRecords.get(i).replace(FISCAL_MONTH, month);
+						}
+					}
 				}
 				// Line description not allowed in upload file so we are replacing in file and
 				// email will be sent with all line desc
 				String lineDescription = allRecords.get(i).getOrDefault(LINE_DESCRIPTION, "");
 				if (!lineDescription.isBlank()) {
-					Application.APP_CONFIG.getLineDescriptionFiles().computeIfAbsent(fileName, k -> new ArrayList<>()).add(
-							"<tr><td>" + vencode + "</td><td>" + invNum + "</td><td>" + lineDescription + "</td></tr>");
+					Application.APP_CONFIG.getLineDescriptionFiles().computeIfAbsent(fileName, k -> new ArrayList<>())
+							.add("<tr><td>" + vencode + "</td><td>" + invNum + "</td><td>" + lineDescription
+									+ "</td></tr>");
 					allRecords.get(i).replace(LINE_DESCRIPTION, "");
 				}
-				
+
 				valid = allRecords.get(i);
 			}
 			validRecords.add(valid);
@@ -311,7 +280,7 @@ public class FileValidator {
 	 */
 	public static void writeCSV(String fileName, List<LinkedHashMap<String, String>> records, boolean validData) {
 		String filePath = (validData ? Application.APP_CONFIG.getCurrentHourFolderValidFiles()
-				: Application.APP_CONFIG.getCurrentHourFolderInValidFiles()) + "//" + fileName; //CURRENT_HOUR_FOLDER_IN_VALID_FILES
+				: Application.APP_CONFIG.getCurrentHourFolderInValidFiles()) + "//" + fileName; // CURRENT_HOUR_FOLDER_IN_VALID_FILES
 		String message = validData ? "Valid records are empty" : "Invalid records are empty";
 
 		if (CollectionUtils.isEmpty(records)) {

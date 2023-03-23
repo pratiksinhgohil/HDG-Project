@@ -4,11 +4,13 @@ import java.awt.AWTException;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.stream.StreamSupport;
 
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
 
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImportFile extends ImportFileOr {
 	WebDriver driver;
+
 	/**
 	 * Instantiates a new import file.
 	 *
@@ -37,18 +40,9 @@ public class ImportFile extends ImportFileOr {
 	 * Username.
 	 *
 	 * @throws InterruptedException the interrupted exception
-	 * @throws AWTException 
+	 * @throws AWTException
 	 */
 	public void username() throws InterruptedException, AWTException {
-//		 Robot a = new Robot();
-//		    a.keyPress(KeyEvent.VK_CONTROL);
-//		    a.keyPress(KeyEvent.VK_SHIFT);
-//		    a.keyPress(KeyEvent.VK_N);
-//		    a.keyRelease(KeyEvent.VK_CONTROL);
-//		    a.keyRelease(KeyEvent.VK_SHIFT);
-//		    a.keyRelease(KeyEvent.VK_N);
-		    
-		    
 		uname.sendKeys(Application.APP_CONFIG.getConfigProps().getProperty("pcc.website.username"));
 		Thread.sleep(2000);
 		nextbtn.click();
@@ -72,30 +66,12 @@ public class ImportFile extends ImportFileOr {
 	 */
 	public void submit() throws InterruptedException, AWTException {
 		submit.click();
-   driver.get("edge://settings/content/pdfDocuments?search=pdf");
+		driver.get("edge://settings/content/pdfDocuments?search=pdf");
 
-   driver.findElement(By.xpath("//*[@id=\"section_pdf\"]/div[2]/div/div[1]/div/div[1]/div[2]/div/div/input")).click();
-    Thread.sleep(1000);
-   // driver.navigate().to("chrome://settings/cookies");
-    Thread.sleep(2000);
-   
- //   driver.get("https://www25.pointclickcare.com/home/home.jsp");
-//		Thread.sleep(7000);
-
+		driver.findElement(By.xpath("//*[@id=\"section_pdf\"]/div[2]/div/div[1]/div/div[1]/div[2]/div/div/input"))
+				.click();
+		Thread.sleep(3000);
 	}
-
-	/**
-	 * Hovermenu.
-	 *
-	 * @throws InterruptedException the interrupted exception
-	 */
-	public void hovermenu() throws InterruptedException {
-		Actions ac = new Actions(driver);
-		ac.moveToElement(hover).perform();
-		Thread.sleep(2000);
-
-	}
-
 	/**
 	 * Uploadfile.
 	 *
@@ -142,7 +118,7 @@ public class ImportFile extends ImportFileOr {
 
 					if (Application.APP_CONFIG.getHdgPccCodeMap().containsKey(communityCode)) {
 
-						String searchText =Application.APP_CONFIG.getHdgPccCodeMap().getProperty(communityCode);
+						String searchText = Application.APP_CONFIG.getHdgPccCodeMap().getProperty(communityCode);
 						String xpathExpression = "//a[text()='" + searchText + "']";
 
 						driver.get("https://www25.pointclickcare.com/home/home.jsp?ESOLnewlogin=N");
@@ -178,7 +154,7 @@ public class ImportFile extends ImportFileOr {
 	 */
 	public void loadfile() throws InterruptedException {
 		loadbtn.click();
-		Thread.sleep(6000);
+		Thread.sleep(10000);
 	}
 
 	/**
@@ -200,23 +176,20 @@ public class ImportFile extends ImportFileOr {
 			Application.APP_CONFIG.getUploadProcessingStatus().put(fileName, "Exception report generated");
 			exc_repo.click();
 			Thread.sleep(10000);
-			
-			File file = new File("C:\\Users\\Administrator\\Downloads\\invoiceimportexceptionreport.xhtml");
-
+			// File file = new File("D:\\PCC\\TempD\\invoiceimportexceptionreport.xhtml");
+			File file = new File(Application.APP_CONFIG.getErrorReportFilesPath().replace("//", "\\")
+					+ "\\invoiceimportexceptionreport.xhtml");
 			// File (or directory) with new name
-			File file2 = new File(""+pdfName);
+			File file2 = new File("" + pdfName);
 
-			if (file2.exists())
-			   throw new java.io.IOException("file exists");
+			if (file2.exists()) {
+				throw new java.io.IOException("file exists");
+			}
 
 			// Rename file (or directory)
 			boolean success = file.renameTo(file2);
 			Application.APP_CONFIG.getExceptionReports().add(pdfName);
 			Thread.sleep(2000);
-			//EmailConfig.sendExceptionReport(pdfName, csvFileNameWithPath, fileName);
-			//log.info("Attached"+pdfName);
-			Thread.sleep(2000);
-			 	
 		} else if (exc_repo.getAccessibleName().equalsIgnoreCase("Commit")) {
 			Thread.sleep(5000);
 			commit(csvFileNameWithPath, fileName);
@@ -241,10 +214,9 @@ public class ImportFile extends ImportFileOr {
 
 		commit.click();
 
-		Thread.sleep(5000);
+		Thread.sleep(7000);
 
 		try {
-			Thread.sleep(2000);
 			Alert alert = driver.switchTo().alert();
 			String alertText = alert.getText();
 			log.info("ALERT_BOX_DETECTED) - ALERT MSG : " + alertText);
