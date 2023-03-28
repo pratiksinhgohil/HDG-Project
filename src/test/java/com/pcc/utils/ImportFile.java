@@ -4,14 +4,11 @@ import java.awt.AWTException;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.stream.StreamSupport;
 
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.edge.EdgeOptions;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
 
 import com.pcc.app.Application;
@@ -169,36 +166,44 @@ public class ImportFile extends ImportFileOr {
 	 */
 	public void popUpHandler(String csvFileNameWithPath, String pdfName, String fileName)
 			throws Exception, AWTException {
-		log.info("Uploaded file path" + csvFileNameWithPath);
-		log.info(" Error report PDF " + pdfName + " exc_repo.getAccessibleName() >>> " + exc_repo.getAccessibleName());
+		log.info("Popup handler for file " + csvFileNameWithPath);
 
 		if (exc_repo.getAccessibleName().equalsIgnoreCase("Exceptions Report")) {
-			Application.APP_CONFIG.getUploadProcessingStatus().put(fileName, "Exception report generated");
+			log.info("Exceptions Report button observed" + exc_repo.getAccessibleName());
+			log.info(" Error report PDF " + pdfName + " exc_repo.getAccessibleName() >>> " + exc_repo.getAccessibleName());
 			exc_repo.click();
 			Thread.sleep(10000);
 			// File file = new File("D:\\PCC\\TempD\\invoiceimportexceptionreport.xhtml");
-			File file = new File(Application.APP_CONFIG.getErrorReportFilesPath().replace("//", "\\")
-					+ "\\invoiceimportexceptionreport.xhtml");
-			// File (or directory) with new name
-			File file2 = new File("" + pdfName);
-
-			if (file2.exists()) {
-				throw new java.io.IOException("file exists");
+			try {
+				File xhtmlFile = new File(Application.APP_CONFIG.getErrorReportFilesPath().replace("//", "\\")
+						+ "\\invoiceimportexceptionreport.xhtml");
+				// File (or directory) with new name
+				File pdfFile = new File("" + pdfName);
+				boolean success = xhtmlFile.renameTo(pdfFile);
+				log.info("File renamed status :"+success);
+				Application.APP_CONFIG.getExceptionReports().add(pdfName);
+				Application.APP_CONFIG.getUploadProcessingStatus().put(fileName, "Exception report generated");
+				log.info("Exception report generated successfully");
+				Thread.sleep(2000);
+				
+			}catch (Exception e) {
+				log.info("Exception while saving exception report"+e.getMessage());
+				Application.APP_CONFIG.getUploadProcessingStatus().put(csvFileNameWithPath,"Error while preparing exception report"+e.getMessage());
 			}
-
-			// Rename file (or directory)
-			boolean success = file.renameTo(file2);
-			Application.APP_CONFIG.getExceptionReports().add(pdfName);
-			Thread.sleep(2000);
 		} else if (exc_repo.getAccessibleName().equalsIgnoreCase("Commit")) {
+			log.info("Commit button observed" + exc_repo.getAccessibleName());
 			Thread.sleep(5000);
 			commit(csvFileNameWithPath, fileName);
 			Thread.sleep(5000);
 
 		} else {
-			log.info("Unknown button " + exc_repo.getAccessibleName());
-			Application.APP_CONFIG.getUploadProcessingStatus().put(csvFileNameWithPath,
-					"Unknown button in UI :  " + exc_repo.getAccessibleName());
+			try {
+				log.info("Unknown button " + exc_repo.getAccessibleName());
+				Application.APP_CONFIG.getUploadProcessingStatus().put(csvFileNameWithPath,"Unknown button in UI :  " + exc_repo.getAccessibleName());	
+			} catch (Exception e) {
+				Application.APP_CONFIG.getUploadProcessingStatus().put(csvFileNameWithPath,"Unknown button in UI exception:  " + e.getMessage());	
+			}
+			
 		}
 
 	}

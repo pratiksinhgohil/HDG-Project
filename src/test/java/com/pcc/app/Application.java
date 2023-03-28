@@ -203,6 +203,7 @@ public class Application {
 
 							// imf.browse();
 							if (imf.checkfile(fileName)) {
+								deleteOldExceptionFile();
 								imf.uploadfile(fileNameWithPath, fileName);
 								imf.loadfile();
 								imf.popUpHandler(fileNameWithPath, pdfName, fileName);
@@ -222,9 +223,10 @@ public class Application {
 			}
 
 			//
+			EmailConfig.sendProcessingStatusEmail(processingStatus, attachFiles);
 		}
 		log.info("Processing status " + processingStatus);
-		EmailConfig.sendProcessingStatusEmail(processingStatus, attachFiles);
+	
 	}
 
 	/**
@@ -321,4 +323,19 @@ public class Application {
 		log.info("Error report folder created ::" + status);
 	}
 
+	public void deleteOldExceptionFile() {
+		try {
+			File file = new File(Application.APP_CONFIG.getErrorReportFilesPath().replace("//", "\\")
+					+ "\\invoiceimportexceptionreport.xhtml");
+			if(file.exists()) {
+				file.delete();
+				log.info("exception report was exists at "+Application.APP_CONFIG.getErrorReportFilesPath()+" so deleted");
+			}else {
+				log.info("exception report not exists at "+Application.APP_CONFIG.getErrorReportFilesPath());
+			}
+		} catch (Exception e) {
+			log.info("deleteOldExceptionFile "+e.getMessage());
+		}
+		
+	}
 }
