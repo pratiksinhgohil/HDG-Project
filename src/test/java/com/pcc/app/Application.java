@@ -15,6 +15,8 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
 import org.openqa.selenium.WebDriver;
+//import org.openqa.selenium.chrome.ChromeDriver;
+//import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.testng.annotations.AfterClass;
@@ -82,7 +84,7 @@ public class Application {
 		String ERROR_REPORT_PATH = APP_BASE_PATH + "//errorfiles//" + CURRENT_HOUR_MINUTE;
 
 		WebDriverManager.edgedriver().setup();
-
+		//WebDriverManager.chromedriver().setup();
 		APP_CONFIG.setEmailReceiver(EMAIL_RECEIVER);
 		APP_CONFIG.setCurrentHour(CURRENT_HOUR_MINUTE);
 		APP_CONFIG.setCurrentHourFolder(CURRENT_PROCESSING_FOLDER);
@@ -115,8 +117,9 @@ public class Application {
 					log.info("Opening browser");
 
 					APP_CONFIG.setAnyValidFile(true);
-					
+					//ChromeOptions options=new ChromeOptions();
 					EdgeOptions options = new EdgeOptions();
+					options.addArguments("--remote-allow-origins=*");
 					HashMap<String, Object> edgePrefs= new HashMap<>();
 					edgePrefs.put("profile.default_content_settings.popups", 0);
 					//edgePrefs.put("download.default_directory","D:\\PCC\\TempD");
@@ -125,6 +128,7 @@ public class Application {
 					
 					options.setExperimentalOption("prefs", edgePrefs);
 					driver = new EdgeDriver(options);
+					// driver=new ChromeDriver(options);
 					driver.manage().window().maximize();
 					
 					driver.get(configProps.getProperty("pcc.website"));// "https://www25.pointclickcare.com/home/login.jsp?ESOLGuid=40_1672328090402"
@@ -154,7 +158,7 @@ public class Application {
 		try {
 			if (driver != null) {
 				driver.close();
-				Runtime.getRuntime().exec("taskkill /F /IM chromedriver*");
+				Runtime.getRuntime().exec("taskkill /F /IM MicrosoftEdge.exe*");
 
 			}
 		} catch (Exception anException) {

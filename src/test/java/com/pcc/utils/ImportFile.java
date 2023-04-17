@@ -1,6 +1,8 @@
 package com.pcc.utils;
 
 import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -64,7 +66,12 @@ public class ImportFile extends ImportFileOr {
 	public void submit() throws InterruptedException, AWTException {
 		submit.click();
 		driver.get("edge://settings/content/pdfDocuments?search=pdf");
-
+		//driver.get("chrome://settings/content/pdfDocuments");
+		//Robot rb=new Robot();
+		//rb.keyPress(KeyEvent.VK_TAB);
+		//rb.keyRelease(KeyEvent.VK_TAB);
+		//rb.keyPress(KeyEvent.VK_UP);
+		//rb.keyRelease(KeyEvent.VK_UP);
 		driver.findElement(By.xpath("//*[@id=\"section_pdf\"]/div[2]/div/div[1]/div/div[1]/div[2]/div/div/input"))
 				.click();
 		Thread.sleep(3000);
@@ -219,7 +226,7 @@ public class ImportFile extends ImportFileOr {
 
 		commit.click();
 
-		Thread.sleep(7000);
+		Thread.sleep(15000); 
 
 		try {
 			Alert alert = driver.switchTo().alert();
